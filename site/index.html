@@ -69,10 +69,57 @@
 
       <section id="explanation" aria-labelledby="explanation-title">
         <h2 id="explanation-title">Explanation</h2>
-        <!-- TODO(#2): Replace placeholder text with real explanation content in a later task. -->
         <p>
-          This section will explain what each term means, the assumptions behind the equation,
-          and when it applies.
+          The Tsiolkovsky rocket equation tells you how much <em>change in velocity</em> a rocket
+          can gain (called <strong>Δv</strong>, pronounced “delta-v”) from burning its propellant.
+          Think of Δv as the rocket’s “speed budget” for a maneuver.
+        </p>
+        <p>
+          This equation is an idealized physics model: it assumes the engine’s performance stays
+          the same during the burn and it ignores losses like air drag and gravity pulling you
+          down while you burn. Real missions have those extra losses, but the rocket equation is
+          still the starting point for understanding what’s possible.
+        </p>
+
+        <h3>Variables (what the symbols mean)</h3>
+        <dl>
+          <dt><strong>Δv (delta-v)</strong></dt>
+          <dd>
+            The <strong>change in velocity</strong> the rocket can produce by burning fuel, measured
+            in meters per second (m/s). Bigger Δv means the rocket can speed up (or slow down)
+            more.
+          </dd>
+
+          <dt><strong>Isp (specific impulse)</strong></dt>
+          <dd>
+            A measure of how <strong>efficient</strong> an engine is, measured in seconds (s). Higher
+            Isp means the engine gets more “push” out of the same amount of propellant.
+          </dd>
+
+          <dt><strong>g<sub>0</sub> (standard gravity)</strong></dt>
+          <dd>
+            A constant used to connect Isp to exhaust speed: <code>g<sub>0</sub> = 9.80665 m/s²</code>.
+            It’s based on Earth’s gravity at sea level.
+          </dd>
+
+          <dt><strong>m<sub>0</sub> (wet mass)</strong></dt>
+          <dd>
+            The rocket’s mass <strong>before</strong> the burn, fully fueled (in kilograms, kg).
+          </dd>
+
+          <dt><strong>m<sub>f</sub> (dry mass)</strong></dt>
+          <dd>
+            The rocket’s mass <strong>after</strong> the burn, with the propellant used up (in kilograms,
+            kg). This is sometimes called “dry mass” or “empty mass.”
+          </dd>
+        </dl>
+
+        <p>
+          Many calculators use an equivalent form of the equation:
+          <code>Δv = Isp × g<sub>0</sub> × ln(m<sub>0</sub>/m<sub>f</sub>)</code>.
+          Here, <code>ln</code> means the <strong>natural logarithm</strong>, and the fraction
+          <code>m<sub>0</sub>/m<sub>f</sub></code> is the <strong>mass ratio</strong> (how many times heavier the rocket
+          is when full compared to when empty).
         </p>
       </section>
 
@@ -153,10 +200,20 @@
 
       <section id="intuition" aria-labelledby="intuition-title">
         <h2 id="intuition-title">Intuition</h2>
-        <!-- TODO(#2): Add intuitive explanation and common misconceptions in a later task. -->
         <p>
-          This section will build intuition for why Δv grows logarithmically with mass ratio and
-          what that means for staging and design.
+          The tricky part of rockets is that fuel has to lift (and accelerate) <em>other fuel</em>.
+          Early in the burn, you’re heavy, so each second of thrust has to speed up a lot of mass.
+          Later in the burn, you’re lighter, so the same engine can change your velocity faster.
+          This “snowball” effect is why adding more fuel helps, but with <strong>diminishing
+          returns</strong>.
+        </p>
+        <p>
+          The natural log (<code>ln</code>) captures those diminishing returns. If Δv is proportional
+          to <code>ln(m<sub>0</sub>/m<sub>f</sub>)</code>, then to get <em>double</em> the Δv you need
+          <em>square</em> the mass ratio: doubling Δv means doubling the log, and doubling a log means
+          squaring what’s inside. That’s why rockets often use <strong>staging</strong> (dropping empty
+          tanks/engines to reduce mass) — it helps reset the mass ratio — but staging is out of
+          scope for this simple calculator.
         </p>
       </section>
     </main>
