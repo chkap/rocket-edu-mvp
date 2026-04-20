@@ -30,7 +30,8 @@ cd "$REPO_ROOT"
 # the most recently-updated by default, but for MVP that's fine).
 TASK_JSON="$(gh issue list \
   --label "role:${ROLE}" --label "status:pending" \
-  --state open --json number,title,body --limit 1)"
+  --state open --json number,title,body --limit 50 \
+  | jq 'sort_by(.number) | .[0:1]')"
 
 NUM="$(echo "$TASK_JSON"   | jq -r '.[0].number // empty')"
 TITLE="$(echo "$TASK_JSON" | jq -r '.[0].title  // empty')"
