@@ -78,31 +78,63 @@
 
       <section id="calculator" aria-labelledby="calculator-title">
         <h2 id="calculator-title">Calculator</h2>
-        <!-- Placeholder form only; calculator logic is out of scope for this issue. -->
-        <form action="#" method="get" aria-describedby="calculator-note">
+
+        <form id="dv-form" novalidate aria-describedby="calculator-note">
           <fieldset>
-            <legend>Inputs (placeholder)</legend>
+            <legend>Compute Δv from Isp and masses</legend>
 
             <p>
-              <label for="ve">Effective exhaust velocity (v<sub>e</sub>)</label>
-              <input id="ve" name="ve" inputmode="decimal" autocomplete="off" />
+              <label for="isp">Isp (specific impulse, seconds)</label>
+              <input
+                id="isp"
+                name="isp"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                required
+                autocomplete="off"
+              />
             </p>
 
             <p>
-              <label for="m0">Initial mass (m<sub>0</sub>)</label>
-              <input id="m0" name="m0" inputmode="decimal" autocomplete="off" />
+              <label for="m0">Wet mass, m<sub>0</sub> (kg)</label>
+              <input
+                id="m0"
+                name="m0"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                required
+                autocomplete="off"
+              />
             </p>
 
             <p>
-              <label for="mf">Final mass (m<sub>f</sub>)</label>
-              <input id="mf" name="mf" inputmode="decimal" autocomplete="off" />
+              <label for="mf">Dry mass, m<sub>f</sub> (kg)</label>
+              <input
+                id="mf"
+                name="mf"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                required
+                autocomplete="off"
+              />
             </p>
 
             <p>
-              <button type="button" disabled>Compute Δv (coming soon)</button>
+              <button type="submit">Compute Δv</button>
             </p>
 
-            <p id="calculator-note">Calculator functionality will be implemented in a separate task.</p>
+            <p id="calculator-note">
+              Uses <code>Δv = Isp × 9.80665 × ln(m<sub>0</sub>/m<sub>f</sub>)</code>
+            </p>
+
+            <p id="calc-error" role="alert" aria-live="polite" hidden></p>
+            <p id="calc-result" aria-live="polite" hidden></p>
           </fieldset>
         </form>
       </section>
