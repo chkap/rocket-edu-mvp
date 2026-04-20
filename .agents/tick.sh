@@ -13,9 +13,9 @@ set -euo pipefail
 ROLE="${1:-}"
 case "$ROLE" in
   lead)     MODEL="claude-sonnet-4.5" ;;
-  worker)   MODEL="gpt-5" ;;
+  worker)   MODEL="gpt-5.2" ;;
   verifier) MODEL="claude-opus-4.7" ;;
-  advisory) MODEL="gpt-5" ;;
+  advisory) MODEL="gpt-5.2" ;;
   *) echo "usage: $0 <lead|worker|verifier|advisory>" >&2; exit 2 ;;
 esac
 
