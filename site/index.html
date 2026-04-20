@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Learn and explore the Tsiolkovsky rocket equation with a simple calculator, explanations, and worked examples."
+    />
+
+    <title>Rocket Equation Calculator - Learn the Tsiolkovsky Equation</title>
+
+    <!-- Optional stubs; real styling/logic will be added in later tasks. -->
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./script.js" defer></script>
+  </head>
+
+  <body>
+    <header>
+      <h1>Rocket Equation (Tsiolkovsky) — Calculator &amp; Intuition</h1>
+      <p>
+        An educational, zero-build page for understanding how rocket mass ratio relates to
+        achievable Δv.
+      </p>
+
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="#equation">Equation</a></li>
+          <li><a href="#explanation">Explanation</a></li>
+          <li><a href="#calculator">Calculator</a></li>
+          <li><a href="#worked-example">Worked example</a></li>
+          <li><a href="#intuition">Intuition</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="content">
+      <section id="equation" aria-labelledby="equation-title">
+        <h2 id="equation-title">The Tsiolkovsky rocket equation</h2>
+
+        <!-- Display equation without any build step or external rendering. -->
+        <p>
+          <strong>Plain-text form:</strong>
+          <code>Δv = v<sub>e</sub> ln(m<sub>0</sub>/m<sub>f</sub>)</code>
+        </p>
+
+        <!-- MathML version (optional). If MathML is not supported, the plain-text form above remains. -->
+        <figure aria-label="Tsiolkovsky rocket equation (MathML)">
+          <math display="block">
+            <mrow>
+              <mo>Δ</mo><mi>v</mi>
+              <mo>=</mo>
+              <msub><mi>v</mi><mi>e</mi></msub>
+              <mo>ln</mo>
+              <mo>(</mo>
+              <mfrac>
+                <msub><mi>m</mi><mn>0</mn></msub>
+                <msub><mi>m</mi><mi>f</mi></msub>
+              </mfrac>
+              <mo>)</mo>
+            </mrow>
+          </math>
+          <figcaption>
+            Where Δv is change in velocity, v<sub>e</sub> is effective exhaust velocity,
+            m<sub>0</sub> is initial mass, and m<sub>f</sub> is final mass.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="explanation" aria-labelledby="explanation-title">
+        <h2 id="explanation-title">Explanation</h2>
+        <!-- TODO(#2): Replace placeholder text with real explanation content in a later task. -->
+        <p>
+          This section will explain what each term means, the assumptions behind the equation,
+          and when it applies.
+        </p>
+      </section>
+
+      <section id="calculator" aria-labelledby="calculator-title">
+        <h2 id="calculator-title">Calculator</h2>
+        <!-- Placeholder form only; calculator logic is out of scope for this issue. -->
+        <form action="#" method="get" aria-describedby="calculator-note">
+          <fieldset>
+            <legend>Inputs (placeholder)</legend>
+
+            <p>
+              <label for="ve">Effective exhaust velocity (v<sub>e</sub>)</label>
+              <input id="ve" name="ve" inputmode="decimal" autocomplete="off" />
+            </p>
+
+            <p>
+              <label for="m0">Initial mass (m<sub>0</sub>)</label>
+              <input id="m0" name="m0" inputmode="decimal" autocomplete="off" />
+            </p>
+
+            <p>
+              <label for="mf">Final mass (m<sub>f</sub>)</label>
+              <input id="mf" name="mf" inputmode="decimal" autocomplete="off" />
+            </p>
+
+            <p>
+              <button type="button" disabled>Compute Δv (coming soon)</button>
+            </p>
+
+            <p id="calculator-note">Calculator functionality will be implemented in a separate task.</p>
+          </fieldset>
+        </form>
+      </section>
+
+      <section id="worked-example" aria-labelledby="worked-example-title">
+        <h2 id="worked-example-title">Worked example</h2>
+        <!-- TODO(#2): Add a worked example with numbers in a later task. -->
+        <article>
+          <h3>Example (placeholder)</h3>
+          <p>
+            This section will walk through a concrete example step-by-step and show the Δv
+            result.
+          </p>
+        </article>
+      </section>
+
+      <section id="intuition" aria-labelledby="intuition-title">
+        <h2 id="intuition-title">Intuition</h2>
+        <!-- TODO(#2): Add intuitive explanation and common misconceptions in a later task. -->
+        <p>
+          This section will build intuition for why Δv grows logarithmically with mass ratio and
+          what that means for staging and design.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <small>
+        MVP skeleton page for Rocket Equation education ·
+        <a
+          href="https://en.wikipedia.org/wiki/Tsiolkovsky_rocket_equation"
+          target="_blank"
+          rel="noreferrer"
+          >Reference</a
+        >
+      </small>
+    </footer>
+  </body>
+</html>
