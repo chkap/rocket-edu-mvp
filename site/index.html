@@ -10,52 +10,7 @@
 
     <title>Rocket Equation Calculator - Learn the Tsiolkovsky Equation</title>
 
-    <!-- Optional stubs; real styling/logic will be added in later tasks. -->
     <link rel="stylesheet" href="./style.css" />
-
-    <!-- Inline CSS so GitHub Pages can ship as-is without touching site/style.css. -->
-    <style>
-      .example-card {
-        border: 1px solid #d1d5db;
-        border-radius: 12px;
-        padding: 1rem;
-        background: #f8fafc;
-        max-width: 60rem;
-      }
-      .example-card h3 {
-        margin-top: 0;
-      }
-      .example-grid {
-        display: grid;
-        gap: 0.5rem;
-        grid-template-columns: 1fr;
-        margin: 0.75rem 0;
-      }
-      @media (min-width: 720px) {
-        .example-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-      .example-kv {
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 0.75rem;
-        background: #ffffff;
-      }
-      .example-kv p {
-        margin: 0.25rem 0;
-      }
-      .example-actions {
-        margin-top: 0.75rem;
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .muted {
-        color: #334155;
-      }
-    </style>
 
     <script src="./script.js" defer></script>
 
@@ -215,55 +170,56 @@
           <fieldset>
             <legend>Compute Δv from Isp and masses</legend>
 
-            <p>
-              <label for="isp">Isp (specific impulse, seconds)</label>
-              <input
-                id="isp"
-                name="isp"
-                type="number"
-                inputmode="decimal"
-                min="0"
-                step="any"
-                required
-                autocomplete="off"
-              />
-            </p>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="isp">Isp (specific impulse, seconds)</label>
+                <input
+                  id="isp"
+                  name="isp"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="any"
+                  required
+                  autocomplete="off"
+                />
+              </div>
 
-            <p>
-              <label for="m0">Wet mass, m<sub>0</sub> (kg)</label>
-              <input
-                id="m0"
-                name="m0"
-                type="number"
-                inputmode="decimal"
-                min="0"
-                step="any"
-                required
-                autocomplete="off"
-              />
-            </p>
+              <div class="form-field">
+                <label for="m0">Wet mass, m<sub>0</sub> (kg)</label>
+                <input
+                  id="m0"
+                  name="m0"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="any"
+                  required
+                  autocomplete="off"
+                />
+              </div>
 
-            <p>
-              <label for="mf">Dry mass, m<sub>f</sub> (kg)</label>
-              <input
-                id="mf"
-                name="mf"
-                type="number"
-                inputmode="decimal"
-                min="0"
-                step="any"
-                required
-                autocomplete="off"
-              />
-            </p>
+              <div class="form-field">
+                <label for="mf">Dry mass, m<sub>f</sub> (kg)</label>
+                <input
+                  id="mf"
+                  name="mf"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="any"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+            </div>
 
-            <p>
+            <div class="form-actions">
               <button type="submit">Compute Δv</button>
-            </p>
-
-            <p id="calculator-note">
-              Uses <code>Δv = Isp × 9.80665 × ln(m<sub>0</sub>/m<sub>f</sub>)</code>
-            </p>
+              <p id="calculator-note" class="form-note">
+                Uses <code>Δv = Isp × 9.80665 × ln(m<sub>0</sub>/m<sub>f</sub>)</code>
+              </p>
+            </div>
 
             <p id="calc-error" role="alert" aria-live="polite" hidden></p>
             <p id="calc-result" aria-live="polite" hidden></p>

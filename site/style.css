@@ -1,1 +1,356 @@
-/* CSS will be added in a later task. */
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --text: #0f172a;
+  --muted: #334155;
+  --border: #cbd5e1;
+  --primary: #1d4ed8;
+  --primary-hover: #1e40af;
+  --focus: #f59e0b;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --success: #065f46;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  font-size: 1rem; /* 16px minimum to avoid mobile zoom */
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: var(--primary);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+header,
+main,
+footer {
+  display: block;
+}
+
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 1rem;
+}
+
+header > * {
+  max-width: 70rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+main#content {
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem;
+}
+
+footer {
+  margin-top: 1rem;
+  padding: 1.25rem 1rem;
+}
+
+footer > * {
+  max-width: 70rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  header,
+  main#content,
+  footer {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+h1 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin: 0 0 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 2.1rem;
+  }
+}
+
+h2 {
+  font-size: 1.25rem;
+  line-height: 1.25;
+  margin: 0 0 0.5rem 0;
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem 0;
+}
+
+p {
+  margin: 0.5rem 0;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.95em;
+  padding: 0.08em 0.3em;
+  border-radius: 0.35em;
+  background: #e2e8f0;
+}
+
+figure {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-x: auto; /* avoid horizontal page scroll if MathML is wide */
+}
+
+figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+nav a {
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid #d1d5db;
+}
+
+nav a:hover {
+  background: #cbd5e1;
+}
+
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+section + section {
+  margin-top: 1rem;
+}
+
+dl {
+  margin: 0.75rem 0;
+}
+
+dt {
+  margin-top: 0.75rem;
+}
+
+dd {
+  margin: 0.25rem 0 0 0;
+  color: var(--text);
+}
+
+/* Calculator form */
+form {
+  margin-top: 0.75rem;
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  min-width: 0;
+}
+
+legend {
+  font-weight: 700;
+  padding: 0 0.3rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 900px) {
+  .form-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.form-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+input[type='number'] {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  font-size: 1rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+input[type='number']:focus-visible {
+  border-color: var(--primary);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.9rem;
+}
+
+button {
+  appearance: none;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  padding: 0.55rem 0.9rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.form-note {
+  margin: 0;
+  color: var(--muted);
+}
+
+#calc-error,
+#calc-result {
+  border-radius: 12px;
+  padding: 0.75rem;
+  margin: 0.9rem 0 0;
+}
+
+#calc-error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+}
+
+#calc-result {
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+}
+
+/* Worked example card (moved from inline styles in index.html) */
+.example-card {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 1rem;
+  background: var(--surface-muted);
+  max-width: 60rem;
+}
+
+.example-card h3 {
+  margin-top: 0;
+}
+
+.example-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr;
+  margin: 0.75rem 0;
+}
+
+@media (min-width: 720px) {
+  .example-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.example-kv {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: var(--surface);
+}
+
+.example-kv p {
+  margin: 0.25rem 0;
+}
+
+.example-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+footer small {
+  color: var(--muted);
+}
