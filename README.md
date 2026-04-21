@@ -29,6 +29,7 @@ GitHub Pages with no build step (plain HTML, CSS, and JavaScript files).
 ```bash
 npm install
 npm test
+npm run smoke
 ```
 
 To preview the static site locally:
@@ -37,6 +38,24 @@ To preview the static site locally:
 cd docs
 python3 -m http.server
 ```
+
+The designer-v2 smoke test uses Vitest + JSDOM, so it runs locally without
+launching a browser:
+
+```bash
+npm run smoke
+```
+
+## Docs maintenance
+
+- **Engine catalog:** add new engines in `docs/data/engines.json` with a unique
+  `key`, the thrust/Isp/mass fields used by `docs/lib/designer_v2/physics.js`,
+  and any fixed-mass metadata needed for blob-style models. Then add matching UI
+  labels under `designer_v2.engine.<key>` in both `docs/i18n/en.json` and
+  `docs/i18n/zh.json`.
+- **i18n contract:** every user-facing string belongs in
+  `docs/i18n/en.json` and `docs/i18n/zh.json`; pages and scripts should read
+  them through `docs/lib/i18n.js` rather than hardcoding visible copy.
 
 ## The 4-role agent crew
 

@@ -7,7 +7,8 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke": "vitest run docs/designer-v2.smoke.test.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   },
   "homepage": "https://github.com/chkap/rocket-edu-mvp#readme",
   "devDependencies": {
+    "jsdom": "^29.0.2",
     "vitest": "^4.1.4"
   }
 }

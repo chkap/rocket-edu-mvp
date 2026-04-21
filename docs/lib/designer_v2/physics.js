@@ -218,7 +218,8 @@ export function gravityDragLoss(twrLiftoff) {
 export function verdict(dv_kms) {
   assertNonNegativeNumber('dv_kms', dv_kms);
 
-  const match = VERDICT_THRESHOLDS.find((threshold) => dv_kms >= threshold.min_kms);
+  const normalizedDvKmS = Math.round(dv_kms * 1000) / 1000;
+  const match = VERDICT_THRESHOLDS.find((threshold) => normalizedDvKmS >= threshold.min_kms);
   return match?.label ?? 'Suborbital';
 }
 

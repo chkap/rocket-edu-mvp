@@ -38,6 +38,7 @@ describe('gravityDragLoss', () => {
 describe('verdict', () => {
   it('maps total delta-v to mission labels', () => {
     expect(verdict(9.4)).toBe('LEO');
+    expect(verdict(9.399996)).toBe('LEO');
     expect(verdict(11.8)).toBe('GTO');
     expect(verdict(12.4)).toBe('TLI');
     expect(verdict(13.5)).toBe('Mars');
