@@ -1,5 +1,6 @@
 import { LAUNCHERS } from './data/launchers.js';
 import { capabilityLabel, initialTWR, stackDeltaV, validateStage } from './lib/rocket.js';
+import { formatMessage, initPage, t } from './lib/i18n.js';
 
 const numberFmt = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 0,
@@ -68,7 +69,7 @@ function resetStateForLauncher() {
   const launcher = getSelectedLauncher();
 
   state.stages = launcher.stages.map((stage) => ({
-    name: stage.name,
+    nameKey: stage.nameKey,
     m_p: String(stage.m_p),
     m_s: String(stage.m_s),
     Isp: String(stage.Isp),
@@ -89,7 +90,7 @@ function populatePresetSelect() {
   select.innerHTML = state.launchers
     .map(
       (launcher) => `
-        <option value="${launcher.id}">${launcher.name}</option>
+        <option value="${launcher.id}">${t(launcher.nameKey)}</option>
       `
     )
     .join('');
@@ -97,9 +98,7 @@ function populatePresetSelect() {
   const missing = [];
   note.hidden = missing.length === 0;
   note.textContent =
-    missing.length === 0
-      ? ''
-      : `Awaiting advisory data for: ${missing.join(', ')}.`;
+    missing.length === 0 ? '' : formatMessage('compare.preset.awaiting', { items: missing.join(', ') });
 }
 
 function buildInputMarkup({ id, name, label, value }) {
@@ -130,8 +129,12 @@ function buildStageMarkup(stage, index, totalStages) {
     <article class="stage-card" aria-labelledby="${prefix}-title">
       <div class="stage-card-header">
         <div>
-          <h3 id="${prefix}-title">${stage.name}</h3>
-          <p class="stage-role">${isTopStage ? 'Top stage' : `Stage ${index + 1}`}</p>
+          <h3 id="${prefix}-title">${t(stage.nameKey)}</h3>
+          <p class="stage-role">${
+            isTopStage
+              ? t('designer.stage.role.top')
+              : formatMessage('designer.stage.number', { number: index + 1 })
+          }</p>
         </div>
       </div>
 
@@ -139,25 +142,25 @@ function buildStageMarkup(stage, index, totalStages) {
         ${buildInputMarkup({
           id: `${prefix}-m_p`,
           name: `stage-${index}-m_p`,
-          label: 'Propellant mass, m_p (kg)',
+          label: t('designer.field.propellant_mass'),
           value: stage.m_p,
         })}
         ${buildInputMarkup({
           id: `${prefix}-m_s`,
           name: `stage-${index}-m_s`,
-          label: 'Structural mass, m_s (kg)',
+          label: t('designer.field.structural_mass'),
           value: stage.m_s,
         })}
         ${buildInputMarkup({
           id: `${prefix}-isp`,
           name: `stage-${index}-Isp`,
-          label: 'Isp (seconds)',
+          label: t('designer.field.isp'),
           value: stage.Isp,
         })}
         ${buildInputMarkup({
           id: `${prefix}-thrust`,
           name: `stage-${index}-thrust_kN`,
-          label: 'Thrust (kN)',
+          label: t('designer.field.thrust'),
           value: stage.thrust_kN,
         })}
         ${
@@ -165,7 +168,7 @@ function buildStageMarkup(stage, index, totalStages) {
             ? buildInputMarkup({
                 id: 'compare-payload',
                 name: 'payload',
-                label: 'Payload for cited mission (kg)',
+                label: t('compare.field.payload'),
                 value: state.payload,
               })
             : ''
@@ -174,7 +177,7 @@ function buildStageMarkup(stage, index, totalStages) {
 
       <div class="stage-slider">
         <div class="slider-row">
-          <label for="${prefix}-slider">What-if Isp slider</label>
+          <label for="${prefix}-slider">${t('compare.slider.label')}</label>
           <input
             id="${prefix}-slider"
             name="slider-${index}"
@@ -184,17 +187,20 @@ function buildStageMarkup(stage, index, totalStages) {
             step="1"
             value="${multiplier}"
           />
-          <output for="${prefix}-slider" id="${prefix}-slider-output">${multiplier}% of entered Isp</output>
+          <output for="${prefix}-slider" id="${prefix}-slider-output">${formatMessage(
+            'compare.slider.output',
+            { percent: multiplier }
+          )}</output>
         </div>
       </div>
 
       <div class="stage-metrics" aria-live="polite">
         <article class="metric-card">
-          <h4>Stage Δv</h4>
+          <h4>${t('designer.metric.stage_dv')}</h4>
           <p id="${prefix}-dv" class="metric-value">—</p>
         </article>
         <article class="metric-card">
-          <h4>Initial TWR</h4>
+          <h4>${t('designer.metric.initial_twr')}</h4>
           <p id="${prefix}-twr" class="metric-value">—</p>
         </article>
       </div>
@@ -257,12 +263,12 @@ function readPositiveField(rawValue, id, label, errors) {
   const value = Number(rawValue);
 
   if (rawValue === '' || !Number.isFinite(value)) {
-    errors.push({ id, message: `${label} must be a finite number.` });
+    errors.push({ id, message: formatMessage('designer.error.finite', { label }) });
     return null;
   }
 
   if (value <= 0) {
-    errors.push({ id, message: `${label} must be greater than 0.` });
+    errors.push({ id, message: formatMessage('designer.error.positive', { label }) });
     return null;
   }
 
@@ -273,12 +279,12 @@ function readNonNegativeField(rawValue, id, label, errors) {
   const value = Number(rawValue);
 
   if (rawValue === '' || !Number.isFinite(value)) {
-    errors.push({ id, message: `${label} must be a finite number.` });
+    errors.push({ id, message: formatMessage('designer.error.finite', { label }) });
     return null;
   }
 
   if (value < 0) {
-    errors.push({ id, message: `${label} must be greater than or equal to 0.` });
+    errors.push({ id, message: formatMessage('designer.error.non_negative', { label }) });
     return null;
   }
 
@@ -289,34 +295,39 @@ function parseState() {
   const errors = [];
 
   const stages = state.stages.map((stage, index) => {
-    const baseIsp = readPositiveField(stage.Isp, `compare-stage-${index}-isp`, 'Isp', errors);
+    const baseIsp = readPositiveField(stage.Isp, `compare-stage-${index}-isp`, t('designer.error.isp'), errors);
     const multiplier = state.ispMultipliers[index] / 100;
 
     return {
-      name: stage.name,
+      nameKey: stage.nameKey,
       m_p: readPositiveField(
         stage.m_p,
         `compare-stage-${index}-m_p`,
-        'Propellant mass',
+        t('designer.error.propellant_mass'),
         errors
       ),
       m_s: readPositiveField(
         stage.m_s,
         `compare-stage-${index}-m_s`,
-        'Structural mass',
+        t('designer.error.structural_mass'),
         errors
       ),
       Isp: baseIsp === null ? null : baseIsp * multiplier,
       thrust_kN: readPositiveField(
         stage.thrust_kN,
         `compare-stage-${index}-thrust`,
-        'Thrust',
+        t('designer.error.thrust'),
         errors
       ),
     };
   });
 
-  const payload = readNonNegativeField(state.payload, 'compare-payload', 'Payload', errors);
+  const payload = readNonNegativeField(
+    state.payload,
+    'compare-payload',
+    t('designer.error.payload'),
+    errors
+  );
 
   if (errors.length === 0) {
     stages.forEach((stage) => validateStage(stage));
@@ -345,7 +356,7 @@ function renderInvalidState(errors) {
 
   if (errorEl) {
     errorEl.hidden = false;
-    errorEl.textContent = 'Fix the highlighted inputs to recompute the launcher comparison.';
+    errorEl.textContent = t('compare.error.fix_inputs');
   }
 
   metricIds.forEach((id) => {
@@ -369,7 +380,9 @@ function renderInvalidState(errors) {
     }
 
     if (outputEl) {
-      outputEl.textContent = `${state.ispMultipliers[index]}% of entered Isp`;
+      outputEl.textContent = formatMessage('compare.slider.output', {
+        percent: state.ispMultipliers[index],
+      });
     }
   });
 }
@@ -391,9 +404,11 @@ function renderSummary(launcher, totalDv) {
   computedDvEl.textContent = `${numberFmt.format(Math.round(totalDv))} m/s`;
   publishedDvEl.textContent = `${numberFmt.format(Math.round(launcher.referenceDeltaV))} m/s`;
   deltaPercentEl.textContent = percentFmt.format(deltaPercent);
-  capabilityEl.textContent = capabilityLabel(totalDv);
-  orbitEl.textContent = launcher.referenceOrbit;
-  noteEl.textContent = `${launcher.notes} The payload field is derived at runtime from the cited mission Δv and the sourced stage numbers, so slider and input changes can move it away from the reference comparison.`;
+  capabilityEl.textContent = t(`capability.${capabilityLabel(totalDv)}`);
+  orbitEl.textContent = t(launcher.referenceOrbitKey);
+  noteEl.textContent = formatMessage('compare.note.payload', {
+    note: t(launcher.notesKey),
+  });
 }
 
 function renderStageMetrics(stages, payloadMasses, stack) {
@@ -416,7 +431,9 @@ function renderStageMetrics(stages, payloadMasses, stack) {
     }
 
     if (outputEl) {
-      outputEl.textContent = `${state.ispMultipliers[index]}% of entered Isp`;
+      outputEl.textContent = formatMessage('compare.slider.output', {
+        percent: state.ispMultipliers[index],
+      });
     }
   });
 }
@@ -427,9 +444,7 @@ function renderSources() {
     return;
   }
 
-  const urls = Array.from(
-    new Set(state.launchers.flatMap((launcher) => launcher.sourceUrls))
-  );
+  const urls = Array.from(new Set(state.launchers.flatMap((launcher) => launcher.sourceUrls)));
 
   sourceList.innerHTML = urls
     .map(
@@ -472,6 +487,11 @@ function handlePresetChange(event) {
 }
 
 function init() {
+  initPage({
+    titleKey: 'page.compare.title',
+    descriptionKey: 'page.compare.description',
+  });
+
   const select = document.getElementById('launcher-select');
   const form = document.getElementById('compare-form');
 

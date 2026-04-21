@@ -66,26 +66,30 @@
   </head>
   <body>
     <header>
-      <h1>Real launcher compare</h1>
-      <p>
-        Start from cited launcher data, compare the ideal stack to a cited mission requirement, and
-        explore how stage-by-stage what-if changes shift the outcome.
-      </p>
+      <h1 data-i18n="compare.hero.title"></h1>
+      <p data-i18n="compare.hero.subtitle"></p>
 
-      <nav aria-label="Primary">
-        <ul>
-          <li><a href="./index.html">Equation guide</a></li>
-          <li><a href="./designer.html">Multi-stage designer</a></li>
-          <li><a href="./compare.html" aria-current="page">Launcher compare</a></li>
-        </ul>
+      <nav aria-label="Primary" data-i18n="nav.primary" data-i18n-attr="aria-label">
+        <div class="nav-row">
+          <ul>
+            <li><a href="./index.html" data-i18n="nav.index"></a></li>
+            <li><a href="./designer.html" data-i18n="nav.designer"></a></li>
+            <li><a href="./compare.html" aria-current="page" data-i18n="nav.compare"></a></li>
+          </ul>
+          <div class="lang-switcher" data-i18n="nav.language_switcher" data-i18n-attr="aria-label">
+            <button type="button" data-set-lang="en" data-i18n="lang.english"></button>
+            <span class="lang-switcher-separator">|</span>
+            <button type="button" data-set-lang="zh" data-i18n="lang.chinese"></button>
+          </div>
+        </div>
       </nav>
     </header>
 
     <main id="content" class="compare-grid">
       <section aria-labelledby="preset-title">
-        <h2 id="preset-title">Choose a launcher preset</h2>
+        <h2 id="preset-title" data-i18n="compare.preset.title"></h2>
         <div class="form-field preset-select">
-          <label for="launcher-select">Launcher preset</label>
+          <label for="launcher-select" data-i18n="compare.preset.label"></label>
           <select id="launcher-select" name="launcher"></select>
         </div>
         <p id="availability-note" class="callout callout-warning" hidden></p>
@@ -93,30 +97,30 @@
       </section>
 
       <section aria-labelledby="compare-summary-title">
-        <h2 id="compare-summary-title">Computed vs cited Δv</h2>
+        <h2 id="compare-summary-title" data-i18n="compare.summary.title"></h2>
         <div class="summary-grid">
           <article class="summary-card">
-            <h3>Computed total Δv</h3>
+            <h3 data-i18n="compare.summary.computed"></h3>
             <p id="computed-dv" class="summary-value" aria-live="polite">—</p>
           </article>
           <article class="summary-card">
-            <h3>Cited mission Δv</h3>
+            <h3 data-i18n="compare.summary.published"></h3>
             <p id="published-dv" class="summary-value" aria-live="polite">—</p>
             <p id="reference-orbit" class="muted"></p>
           </article>
           <article class="summary-card">
-            <h3>% delta</h3>
+            <h3 data-i18n="compare.summary.delta_percent"></h3>
             <p id="delta-percent" class="summary-value" aria-live="polite">—</p>
           </article>
           <article class="summary-card">
-            <h3>Capability label</h3>
+            <h3 data-i18n="compare.summary.capability"></h3>
             <p id="capability-label" class="summary-value" aria-live="polite">—</p>
           </article>
         </div>
       </section>
 
       <section aria-labelledby="editor-title">
-        <h2 id="editor-title">Launcher editor</h2>
+        <h2 id="editor-title" data-i18n="compare.editor.title"></h2>
         <p id="compare-error" class="callout callout-danger" role="alert" aria-live="polite" hidden></p>
         <form id="compare-form" novalidate>
           <div id="stage-list" class="stage-list"></div>
@@ -124,16 +128,16 @@
       </section>
 
       <section aria-labelledby="source-title">
-        <h2 id="source-title">Sources</h2>
-        <p class="muted">Every URL below comes directly from the advisory comment in issue #24.</p>
+        <h2 id="source-title" data-i18n="compare.sources.title"></h2>
+        <p class="muted" data-i18n="compare.sources.note"></p>
         <ul id="source-list" class="source-list"></ul>
       </section>
     </main>
 
     <footer>
       <small>
-        Compare page powered by <code>docs/lib/rocket.js</code> ·
-        <a href="./designer.html">Open the editable designer</a>
+        <span data-i18n="compare.footer.prefix" data-i18n-html="true"></span>
+        <a href="./designer.html" data-i18n="compare.footer.link"></a>
       </small>
     </footer>
   </body>

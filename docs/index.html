@@ -11,82 +11,43 @@
     <title>Rocket Equation Calculator - Learn the Tsiolkovsky Equation</title>
 
     <link rel="stylesheet" href="./style.css" />
-
-    <script src="./script.js" defer></script>
-
-    <!-- Optionally load the Falcon 9 numbers into the calculator (kept here so only index.html changes). -->
-    <script defer>
-      (() => {
-        const EXAMPLE = { isp: 282, m0: 433100, mf: 25600 };
-
-        function init() {
-          const btn = document.getElementById('load-falcon9');
-          if (!btn) return;
-
-          btn.addEventListener('click', () => {
-            const ispEl = document.getElementById('isp');
-            const m0El = document.getElementById('m0');
-            const mfEl = document.getElementById('mf');
-            const form = document.getElementById('dv-form');
-
-            if (ispEl) ispEl.value = String(EXAMPLE.isp);
-            if (m0El) m0El.value = String(EXAMPLE.m0);
-            if (mfEl) mfEl.value = String(EXAMPLE.mf);
-
-            document.getElementById('calculator')?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
-
-            if (form?.requestSubmit) {
-              form.requestSubmit();
-            } else {
-              form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-            }
-          });
-        }
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', init);
-        } else {
-          init();
-        }
-      })();
-    </script>
+    <script type="module" src="./script.js"></script>
   </head>
 
   <body>
     <header>
-      <h1>Rocket Equation (Tsiolkovsky) — Calculator &amp; Intuition</h1>
-      <p>
-        An educational, zero-build page for understanding how rocket mass ratio relates to
-        achievable Δv.
-      </p>
+      <h1 data-i18n="index.hero.title"></h1>
+      <p data-i18n="index.hero.subtitle"></p>
 
-      <nav aria-label="Primary">
-        <ul>
-          <li><a href="./designer.html">Multi-stage designer</a></li>
-          <li><a href="./compare.html">Launcher compare</a></li>
-          <li><a href="#equation">Equation</a></li>
-          <li><a href="#explanation">Explanation</a></li>
-          <li><a href="#calculator">Calculator</a></li>
-          <li><a href="#worked-example">Worked example</a></li>
-          <li><a href="#intuition">Intuition</a></li>
-        </ul>
+      <nav aria-label="Primary" data-i18n="nav.primary" data-i18n-attr="aria-label">
+        <div class="nav-row">
+          <ul>
+            <li><a href="./designer.html" data-i18n="nav.designer"></a></li>
+            <li><a href="./compare.html" data-i18n="nav.compare"></a></li>
+            <li><a href="#equation" data-i18n="nav.equation"></a></li>
+            <li><a href="#explanation" data-i18n="nav.explanation"></a></li>
+            <li><a href="#calculator" data-i18n="nav.calculator"></a></li>
+            <li><a href="#worked-example" data-i18n="nav.worked_example"></a></li>
+            <li><a href="#intuition" data-i18n="nav.intuition"></a></li>
+          </ul>
+          <div class="lang-switcher" data-i18n="nav.language_switcher" data-i18n-attr="aria-label">
+            <button type="button" data-set-lang="en" data-i18n="lang.english"></button>
+            <span class="lang-switcher-separator">|</span>
+            <button type="button" data-set-lang="zh" data-i18n="lang.chinese"></button>
+          </div>
+        </div>
       </nav>
     </header>
 
     <main id="content">
       <section id="equation" aria-labelledby="equation-title">
-        <h2 id="equation-title">The Tsiolkovsky rocket equation</h2>
+        <h2 id="equation-title" data-i18n="index.equation.title"></h2>
 
-        <!-- Display equation without any build step or external rendering. -->
         <p>
-          <strong>Plain-text form:</strong>
+          <strong data-i18n="index.equation.plain_text_label"></strong>
           <code>Δv = v<sub>e</sub> ln(m<sub>0</sub>/m<sub>f</sub>)</code>
         </p>
 
-        <!-- MathML version (optional). If MathML is not supported, the plain-text form above remains. -->
         <figure aria-label="Tsiolkovsky rocket equation (MathML)">
           <math display="block">
             <mrow>
@@ -102,79 +63,46 @@
               <mo>)</mo>
             </mrow>
           </math>
-          <figcaption>
-            Where Δv is change in velocity, v<sub>e</sub> is effective exhaust velocity,
-            m<sub>0</sub> is initial mass, and m<sub>f</sub> is final mass.
-          </figcaption>
+          <figcaption data-i18n="index.equation.figcaption" data-i18n-html="true"></figcaption>
         </figure>
       </section>
 
       <section id="explanation" aria-labelledby="explanation-title">
-        <h2 id="explanation-title">Explanation</h2>
-        <p>
-          The Tsiolkovsky rocket equation tells you how much <em>change in velocity</em> a rocket
-          can gain (called <strong>Δv</strong>, pronounced “delta-v”) from burning its propellant.
-          Think of Δv as the rocket’s “speed budget” for a maneuver.
-        </p>
-        <p>
-          This equation is an idealized physics model: it assumes the engine’s performance stays
-          the same during the burn and it ignores losses like air drag and gravity pulling you
-          down while you burn. Real missions have those extra losses, but the rocket equation is
-          still the starting point for understanding what’s possible.
-        </p>
+        <h2 id="explanation-title" data-i18n="index.explanation.title"></h2>
+        <p data-i18n="index.explanation.p1" data-i18n-html="true"></p>
+        <p data-i18n="index.explanation.p2" data-i18n-html="true"></p>
 
-        <h3>Variables (what the symbols mean)</h3>
+        <h3 data-i18n="index.explanation.variables_title"></h3>
         <dl>
-          <dt><strong>Δv (delta-v)</strong></dt>
-          <dd>
-            The <strong>change in velocity</strong> the rocket can produce by burning fuel, measured
-            in meters per second (m/s). Bigger Δv means the rocket can speed up (or slow down)
-            more.
-          </dd>
+          <dt><strong data-i18n="index.explanation.dv_term"></strong></dt>
+          <dd data-i18n="index.explanation.dv_desc" data-i18n-html="true"></dd>
 
-          <dt><strong>Isp (specific impulse)</strong></dt>
-          <dd>
-            A measure of how <strong>efficient</strong> an engine is, measured in seconds (s). Higher
-            Isp means the engine gets more “push” out of the same amount of propellant.
-          </dd>
+          <dt><strong data-i18n="index.explanation.isp_term"></strong></dt>
+          <dd data-i18n="index.explanation.isp_desc" data-i18n-html="true"></dd>
 
-          <dt><strong>g<sub>0</sub> (standard gravity)</strong></dt>
-          <dd>
-            A constant used to connect Isp to exhaust speed: <code>g<sub>0</sub> = 9.80665 m/s²</code>.
-            It’s based on Earth’s gravity at sea level.
-          </dd>
+          <dt><strong data-i18n="index.explanation.g0_term" data-i18n-html="true"></strong></dt>
+          <dd data-i18n="index.explanation.g0_desc" data-i18n-html="true"></dd>
 
-          <dt><strong>m<sub>0</sub> (wet mass)</strong></dt>
-          <dd>
-            The rocket’s mass <strong>before</strong> the burn, fully fueled (in kilograms, kg).
-          </dd>
+          <dt><strong data-i18n="index.explanation.m0_term" data-i18n-html="true"></strong></dt>
+          <dd data-i18n="index.explanation.m0_desc" data-i18n-html="true"></dd>
 
-          <dt><strong>m<sub>f</sub> (dry mass)</strong></dt>
-          <dd>
-            The rocket’s mass <strong>after</strong> the burn, with the propellant used up (in kilograms,
-            kg). This is sometimes called “dry mass” or “empty mass.”
-          </dd>
+          <dt><strong data-i18n="index.explanation.mf_term" data-i18n-html="true"></strong></dt>
+          <dd data-i18n="index.explanation.mf_desc" data-i18n-html="true"></dd>
         </dl>
 
-        <p>
-          Many calculators use an equivalent form of the equation:
-          <code>Δv = Isp × g<sub>0</sub> × ln(m<sub>0</sub>/m<sub>f</sub>)</code>.
-          Here, <code>ln</code> means the <strong>natural logarithm</strong>, and the fraction
-          <code>m<sub>0</sub>/m<sub>f</sub></code> is the <strong>mass ratio</strong> (how many times heavier the rocket
-          is when full compared to when empty).
-        </p>
+        <p data-i18n="index.explanation.p3" data-i18n-html="true"></p>
       </section>
 
       <section id="calculator" aria-labelledby="calculator-title">
-        <h2 id="calculator-title">Calculator</h2>
+        <h2 id="calculator-title" data-i18n="index.calculator.title"></h2>
 
         <form id="dv-form" novalidate aria-describedby="calculator-note">
           <fieldset>
-            <legend>Compute Δv from Isp and masses</legend>
+            <legend data-i18n="index.calculator.legend"></legend>
 
             <div class="form-grid">
               <div class="form-field">
-                <label for="isp">Isp (specific impulse, seconds)</label>
+                <label for="isp" data-i18n="index.calculator.isp_label" data-i18n-html="true"></label>
                 <input
                   id="isp"
                   name="isp"
@@ -188,7 +116,7 @@
               </div>
 
               <div class="form-field">
-                <label for="m0">Wet mass, m<sub>0</sub> (kg)</label>
+                <label for="m0" data-i18n="index.calculator.m0_label" data-i18n-html="true"></label>
                 <input
                   id="m0"
                   name="m0"
@@ -202,7 +130,7 @@
               </div>
 
               <div class="form-field">
-                <label for="mf">Dry mass, m<sub>f</sub> (kg)</label>
+                <label for="mf" data-i18n="index.calculator.mf_label" data-i18n-html="true"></label>
                 <input
                   id="mf"
                   name="mf"
@@ -217,10 +145,13 @@
             </div>
 
             <div class="form-actions">
-              <button type="submit">Compute Δv</button>
-              <p id="calculator-note" class="form-note">
-                Uses <code>Δv = Isp × 9.80665 × ln(m<sub>0</sub>/m<sub>f</sub>)</code>
-              </p>
+              <button type="submit" data-i18n="index.calculator.submit"></button>
+              <p
+                id="calculator-note"
+                class="form-note"
+                data-i18n="index.calculator.note"
+                data-i18n-html="true"
+              ></p>
             </div>
 
             <p id="calc-error" role="alert" aria-live="polite" hidden></p>
@@ -230,112 +161,76 @@
       </section>
 
       <section id="worked-example" aria-labelledby="worked-example-title">
-        <h2 id="worked-example-title">Worked example</h2>
+        <h2 id="worked-example-title" data-i18n="index.example.title"></h2>
 
         <!--
           Falcon 9 Stage 1 worked example (ideal rocket-equation calculation).
 
           Sources / assumptions:
-          - Masses: SpaceX Falcon 9 User’s Guide PDF (Stage 1) lists ~433,100 kg (gross/wet) and
+          - Masses: SpaceX Falcon 9 User's Guide PDF (Stage 1) lists ~433,100 kg (gross/wet) and
             ~25,600 kg (dry). Source: https://www.spacex.com/media/Falcon_9_User_Guide.pdf
           - Engine: Merlin 1D Isp is commonly cited as ~282 s at sea level and ~311 s in vacuum.
             We use the sea-level value here because Stage 1 begins its burn in the atmosphere.
 
           Notes:
-          - This Δv is an *ideal* “speed budget” from the rocket equation (ignores gravity + drag
+          - This Δv is an ideal "speed budget" from the rocket equation (ignores gravity + drag
             losses and assumes constant performance). Real ascent to orbit requires more.
         -->
 
         <article class="example-card" aria-label="Worked example: Falcon 9 Stage 1">
-          <h3>Falcon 9 Stage 1 (Block 5) — plug in real numbers</h3>
+          <h3 data-i18n="index.example.card_title"></h3>
 
           <div class="example-grid">
             <div class="example-kv">
-              <p><strong>Inputs</strong></p>
-              <p><code>Isp</code> ≈ <strong>282 s</strong> (sea level)</p>
-              <p><code>m<sub>0</sub></code> ≈ <strong>433,100 kg</strong> (wet mass)</p>
-              <p><code>m<sub>f</sub></code> ≈ <strong>25,600 kg</strong> (dry mass)</p>
+              <p><strong data-i18n="index.example.inputs_title"></strong></p>
+              <p data-i18n="index.example.inputs.isp" data-i18n-html="true"></p>
+              <p data-i18n="index.example.inputs.m0" data-i18n-html="true"></p>
+              <p data-i18n="index.example.inputs.mf" data-i18n-html="true"></p>
             </div>
 
             <div class="example-kv">
-              <p><strong>Result</strong></p>
-              <p>
-                <code>Δv = Isp × 9.80665 × ln(m<sub>0</sub>/m<sub>f</sub>)</code>
-              </p>
-              <p>
-                <strong>Δv ≈ 7,822 m/s</strong> (<strong>7.82 km/s</strong>)
-              </p>
-              <p class="muted">
-                (This is the ideal value from the equation for these inputs.)
-              </p>
+              <p><strong data-i18n="index.example.result_title"></strong></p>
+              <p data-i18n="index.example.result_formula" data-i18n-html="true"></p>
+              <p data-i18n="index.example.result_value" data-i18n-html="true"></p>
+              <p class="muted" data-i18n="index.example.result_note"></p>
             </div>
           </div>
 
           <details>
-            <summary>Show the step-by-step calculation</summary>
+            <summary data-i18n="index.example.details_summary"></summary>
             <ol>
-              <li>
-                Mass ratio:
-                <code>m<sub>0</sub>/m<sub>f</sub> = 433100 / 25600 ≈ 16.914</code>
-              </li>
-              <li>
-                Natural log:
-                <code>ln(m<sub>0</sub>/m<sub>f</sub>) ≈ ln(16.914) ≈ 2.828</code>
-              </li>
-              <li>
-                Plug into the equation:
-                <code>Δv ≈ 282 × 9.80665 × 2.828 ≈ 7822 m/s</code>
-              </li>
+              <li data-i18n="index.example.step_1" data-i18n-html="true"></li>
+              <li data-i18n="index.example.step_2" data-i18n-html="true"></li>
+              <li data-i18n="index.example.step_3" data-i18n-html="true"></li>
             </ol>
           </details>
 
-          <p>
-            <strong>What does ~7.8 km/s mean?</strong> Δv is a rocket’s “speed budget” in an ideal world.
-            A value around 7–8 km/s is in the same ballpark as the speed needed for low Earth orbit
-            (about 7.8 km/s), but real launches need <em>more</em> than orbital speed because gravity and
-            air drag steal some of that budget while you climb.
-          </p>
-          <p>
-            That’s why Falcon 9 needs a <strong>second stage</strong>: Stage 1 provides a huge push early on,
-            then Stage 2 continues accelerating above most of the atmosphere to reach orbit.
-          </p>
+          <p data-i18n="index.example.p1" data-i18n-html="true"></p>
+          <p data-i18n="index.example.p2" data-i18n-html="true"></p>
 
           <div class="example-actions">
-            <button type="button" id="load-falcon9">Load these numbers into the calculator</button>
-            <span class="muted">(You should see ~7,822 m/s.)</span>
+            <button type="button" id="load-falcon9" data-i18n="index.example.action.load"></button>
+            <span class="muted" data-i18n="index.example.action.hint"></span>
           </div>
         </article>
       </section>
 
       <section id="intuition" aria-labelledby="intuition-title">
-        <h2 id="intuition-title">Intuition</h2>
-        <p>
-          The tricky part of rockets is that fuel has to lift (and accelerate) <em>other fuel</em>.
-          Early in the burn, you’re heavy, so each second of thrust has to speed up a lot of mass.
-          Later in the burn, you’re lighter, so the same engine can change your velocity faster.
-          This “snowball” effect is why adding more fuel helps, but with <strong>diminishing
-          returns</strong>.
-        </p>
-        <p>
-          The natural log (<code>ln</code>) captures those diminishing returns. If Δv is proportional
-          to <code>ln(m<sub>0</sub>/m<sub>f</sub>)</code>, then to get <em>double</em> the Δv you need
-          <em>square</em> the mass ratio: doubling Δv means doubling the log, and doubling a log means
-          squaring what’s inside. That’s why rockets often use <strong>staging</strong> (dropping empty
-          tanks/engines to reduce mass) — it helps reset the mass ratio — but staging is out of
-          scope for this simple calculator.
-        </p>
+        <h2 id="intuition-title" data-i18n="index.intuition.title"></h2>
+        <p data-i18n="index.intuition.p1" data-i18n-html="true"></p>
+        <p data-i18n="index.intuition.p2" data-i18n-html="true"></p>
       </section>
     </main>
 
     <footer>
       <small>
-        MVP skeleton page for Rocket Equation education ·
+        <span data-i18n="index.footer.prefix" data-i18n-html="true"></span>
         <a
           href="https://en.wikipedia.org/wiki/Tsiolkovsky_rocket_equation"
           target="_blank"
           rel="noreferrer"
-          >Reference</a
-        >
+          data-i18n="index.footer.link"
+        ></a>
       </small>
     </footer>
   </body>

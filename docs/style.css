@@ -171,6 +171,52 @@ nav a:hover {
   background: #cbd5e1;
 }
 
+.nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-row ul {
+  margin-top: 0;
+}
+
+.lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.nav-row .lang-switcher {
+  margin-top: 0;
+}
+
+.lang-switcher button {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
+  padding: 0.2rem 0.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.lang-switcher button:hover {
+  background: #e2e8f0;
+  border-color: #d1d5db;
+}
+
+.lang-switcher button.is-active {
+  background: #e2e8f0;
+  border-color: #d1d5db;
+}
+
+.lang-switcher-separator {
+  color: var(--muted);
+}
+
 
 section {
   background: var(--surface);
