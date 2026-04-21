@@ -6,8 +6,37 @@ of four AI agents that coordinate exclusively through GitHub issues and PRs.
 
 > Δv = Isp · g₀ · ln(m₀ / m_f)
 
-The finished site lives in [`site/`](./site) and is intended to deploy to
-GitHub Pages with no build step (one HTML file + a little CSS/JS).
+The finished site lives in [`docs/`](./docs) and is intended to deploy to
+GitHub Pages with no build step (plain HTML, CSS, and JavaScript files).
+
+## Features
+
+- **Δv calculator** for the Tsiolkovsky rocket equation, with validation and a
+  worked Falcon 9 example.
+- **Multi-stage designer** for live per-stage Δv, TWR, capability labels, and
+  a stage-burn velocity chart.
+- **Real-mission compare** for cited launcher presets versus computed ideal Δv.
+
+## Sources
+
+- [Issue #23 advisory comment](https://github.com/chkap/rocket-edu-mvp/issues/23#issuecomment-4286980274)
+  — Δv budget thresholds and capability-label assumptions.
+- [Issue #24 advisory comment](https://github.com/chkap/rocket-edu-mvp/issues/24#issuecomment-4286980437)
+  — launcher stage masses, Isp, thrust, and mission-reference comparisons.
+
+## Development
+
+```bash
+npm install
+npm test
+```
+
+To preview the static site locally:
+
+```bash
+cd docs
+python3 -m http.server
+```
 
 ## The 4-role agent crew
 
@@ -68,7 +97,7 @@ README.md
   tick.sh
   setup-labels.sh
   prompts/{lead,worker,verifier,advisory}.md
-site/                 # the website itself (built by the Worker)
+docs/                 # the website itself (built by the Worker)
 ```
 
 ## Status
