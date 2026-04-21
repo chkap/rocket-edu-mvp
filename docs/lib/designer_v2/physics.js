@@ -489,7 +489,12 @@ export function analyze(config) {
     total: {
       dv_ms: totalDvMs,
       dv_kms: totalDvMs / 1000,
-      verdict: config.missionTarget ?? verdict(totalDvMs / 1000),
+      verdict: verdict(totalDvMs / 1000),
+      mission_target: config.missionTarget ?? null,
+      target_met:
+        typeof config.missionTarget === 'string'
+          ? verdict(totalDvMs / 1000) === config.missionTarget
+          : null,
       warnings: cloneWarnings(warnings),
     },
     structural_index: structural,

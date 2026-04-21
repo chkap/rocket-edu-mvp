@@ -51,28 +51,28 @@ describe('analyze presets', () => {
     const result = analyze(falcon9);
     expect(result.total.dv_kms).toBeGreaterThan(8.93);
     expect(result.total.dv_kms).toBeLessThan(9.87);
-    expect(result.total.verdict).toBe('LEO');
+    expect(result.total.mission_target).toBe('LEO');
   });
 
   it('keeps Saturn V within 5% of the target oracle', () => {
     const result = analyze(saturnV);
     expect(result.total.dv_kms).toBeGreaterThan(16.15);
     expect(result.total.dv_kms).toBeLessThan(17.85);
-    expect(result.total.verdict).toBe('TLI');
+    expect(result.total.mission_target).toBe('TLI');
   });
 
   it('keeps SLS Block 1 within 5% of the target oracle', () => {
     const result = analyze(slsBlock1);
     expect(result.total.dv_kms).toBeGreaterThan(9.025);
     expect(result.total.dv_kms).toBeLessThan(9.975);
-    expect(result.total.verdict).toBe('LEO');
+    expect(result.total.mission_target).toBe('LEO');
   });
 
   it('keeps Long March 5 within 5% of the target oracle', () => {
     const result = analyze(longMarch5);
     expect(result.total.dv_kms).toBeGreaterThan(9.025);
     expect(result.total.dv_kms).toBeLessThan(9.975);
-    expect(result.total.verdict).toBe('LEO');
+    expect(result.total.mission_target).toBe('LEO');
   });
 });
 
@@ -200,7 +200,12 @@ describe('analyze edge cases', () => {
     const withBoosters = analyze(slsBlock1);
 
     expect(withoutBoosters.total.dv_kms).toBeLessThan(9.4);
+    expect(withoutBoosters.total.verdict).toBe('Suborbital');
+    expect(withoutBoosters.total.mission_target).toBe('LEO');
+    expect(withoutBoosters.total.target_met).toBe(false);
     expect(withBoosters.total.dv_kms).toBeGreaterThanOrEqual(9.4);
+    expect(withBoosters.total.verdict).toBe('LEO');
+    expect(withBoosters.total.target_met).toBe(true);
     expect(withBoosters.boosters?.dv_ms).toBeGreaterThan(0);
   });
 });
