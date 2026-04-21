@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tick.sh v2 — one polling step for a single agent role.
+# tick.sh v3 — one polling step for a single agent role.
 #
 # Usage:
 #   bash .agents/tick.sh <role>                  # auto: read inbox
@@ -7,9 +7,14 @@
 #   bash .agents/tick.sh <role> -                # read human message from stdin
 #   bash .agents/tick.sh broadcast "msg"         # send same message to all 4
 #
-# Each role runs in its own COPILOT_CONFIG_DIR with --continue (or new
-# session on first run). Role-specific instructions auto-load from
-# roles/<role>/AGENTS.md; shared protocol from repo-root AGENTS.md.
+# Layout:
+#   <repo>/agents/<role>.agent.md     — role definition (Copilot custom agent)
+#   <repo>/AGENTS.md                  — shared crew protocol
+#   <repo>/.agents/cfg/<role>/        — per-role COPILOT_CONFIG_DIR (session state)
+#   <repo>/.agents/log                — append-only stdout log
+#
+# Each role uses --continue to keep memory across ticks, but agent files
+# include a mandatory "always re-read state" rule to defeat staleness.
 
 set -euo pipefail
 
@@ -26,8 +31,8 @@ if [[ "$ROLE" == "broadcast" ]]; then
 fi
 
 case "$ROLE" in
-  lead)     MODEL="claude-sonnet-4.5" ;;
-  worker)   MODEL="gpt-5.2" ;;
+  lead)     MODEL="claude-opus-4.7" ;;
+  worker)   MODEL="gpt-5.4" ;;
   verifier) MODEL="claude-opus-4.7" ;;
   advisory) MODEL="gpt-5.2" ;;
   *) echo "usage: $0 <lead|worker|verifier|advisory|broadcast> [prompt|-]" >&2; exit 2 ;;
@@ -46,7 +51,10 @@ ROLE_DIR="$REPO_ROOT/roles/$ROLE"
 CFG="$REPO_ROOT/.agents/cfg/$ROLE"
 mkdir -p "$CFG"
 
-cd "$REPO_ROOT"
+# Custom instructions auto-load: Copilot reads AGENTS.md from cwd walking up.
+# We cd into roles/<role>/ so role-specific AGENTS.md loads first, then
+# repo-root AGENTS.md (shared crew protocol) loads as parent.
+cd "$ROLE_DIR"
 
 # Pull this role's inbox (oldest pending first)
 TASK_JSON="$(gh issue list \
@@ -61,15 +69,14 @@ if [[ "$INBOX_COUNT" -eq 0 && -z "$HUMAN" ]]; then
   exit 0
 fi
 
-# Compose inbox section
+# Compose inbox section (use jq map+join to avoid shell quoting issues)
 if [[ "$INBOX_COUNT" -gt 0 ]]; then
-  INBOX="$(echo "$TASK_JSON" | jq -r '.[] | "### Issue #\(.number): \(.title)\nLabels: \([.labels[].name] | join(\", \"))\n\n\(.body)\n"')"
+  INBOX="$(echo "$TASK_JSON" | jq -r 'map("### Issue #\(.number): \(.title)\nLabels: " + ([.labels[].name] | join(", ")) + "\n\n" + .body + "\n") | join("\n---\n")')"
 else
   INBOX="(empty inbox)"
 fi
 
-# Build prompt
-PROMPT="## Inbox
+PROMPT="## Inbox (live, fetched at tick time)
 $INBOX"
 
 if [[ -n "$HUMAN" ]]; then
@@ -82,16 +89,13 @@ fi
 
 # Resume session if we have one, else start fresh
 RESUME_FLAG="--continue"
-# .copilot/session-state may not exist yet on first run
 if [[ ! -d "$CFG/session-state" ]] && [[ ! -d "$CFG/sessions" ]]; then
   RESUME_FLAG=""
   echo "[$ROLE] no prior session, starting fresh"
 fi
 
-echo "[$ROLE] inbox=$INBOX_COUNT human=$([ -n "$HUMAN" ] && echo yes || echo no) cfg=$CFG"
+echo "[$ROLE] inbox=$INBOX_COUNT human=$([ -n "$HUMAN" ] && echo yes || echo no) cfg=$CFG model=$MODEL"
 
-# Run from role dir so Copilot auto-loads roles/$ROLE/AGENTS.md and root AGENTS.md
-cd "$ROLE_DIR"
 set +e
 copilot \
   --config-dir "$CFG" \
@@ -103,7 +107,6 @@ copilot \
   -p "$PROMPT"
 RC=$?
 set -e
-cd "$REPO_ROOT"
 
 # Breadcrumb on the first inbox issue (if any)
 FIRST_NUM="$(echo "$TASK_JSON" | jq -r '.[0].number // empty')"
