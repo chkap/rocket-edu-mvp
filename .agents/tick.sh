@@ -28,19 +28,8 @@ if [[ -f "$STOP_FILE" ]]; then
   exit 0
 fi
 
-# ── Mutex: at most one agent works at any time ────────────────────────────
-# Cron + manual + lead-spawned ticks all share .agents/.lock.
-# Lead can spawn other roles by setting AGENTS_LOCK_HELD=1 (it already holds
-# the lock for the whole sequence).
-LOCK_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.lock"
-if [[ "${AGENTS_LOCK_HELD:-0}" != "1" ]]; then
-  exec 9>"$LOCK_FILE"
-  if ! flock -n 9; then
-    echo "[$ROLE] another agent is currently working (lock held). skipping." >&2
-    exit 0
-  fi
-  export AGENTS_LOCK_HELD=1
-fi
+# Mutex is provided by .agents/loop.sh (sequential single-process scheduler).
+# Don't run two ticks in parallel from different shells; loop.sh handles it.
 
 if [[ "$ROLE" == "broadcast" ]]; then
   MSG="${*:-}"

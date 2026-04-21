@@ -25,30 +25,37 @@ Allowed `agent:` and `to:` values: `lead`, `worker`, `verifier`, `advisory`, `hu
 
 ## Working Loop (how the crew actually moves)
 
-Only **Lead is on a clock** (cron, every 10 min). The other 3 roles are
-**message-driven** — they run only when Lead spawns them after detecting work
-in their inbox. The system enforces a **mutex**: at most one agent runs at any
-moment.
+A single supervisor process, `.agents/loop.sh`, drives the whole crew. Every
+cycle it walks `[lead, worker, verifier, advisory]` in order:
+
+- **Lead** runs every cycle (watchdog: plan, label, unblock, heartbeat).
+- **Worker / Verifier / Advisory** run only when they have a
+  `role:<them> + status:pending` issue in their inbox; otherwise the loop
+  skips them.
+
+Roles run **sequentially in one process** — that is the mutex. No nested
+copilot, no cron, no spawning. The loop logs every step to `.agents/log` and
+exits when `.agents/STOPPED` appears.
 
 ```
-human files GOAL ─► Lead (cron) ─► decomposes into role:<x> issues
+human files GOAL ─► Lead labels & decomposes into role:<x> issues
                        │
                        ▼
-            Lead watchdog tick (every 10 min):
-              1. refresh state from gh/git
-              2. plan / unblock / nudge
-              3. spawn ONE pending role:
-                   bash .agents/tick.sh <worker|verifier|advisory>
-              4. heartbeat & exit
+            loop cycle (every ~30s):
+              lead       → always (watchdog)
+              worker     → if pending inbox
+              verifier   → if pending inbox
+              advisory   → if pending inbox
+              sleep, repeat
                        │
                        ▼
-            spawned agent processes its inbox, posts results
-            back as issue/PR comments addressed to the next role.
-            Lead picks up the handoff on the next tick.
+            When verifier merges last PR & GOAL accepted,
+            lead writes .agents/STOPPED → loop exits.
 ```
 
-You are **not** running a tight loop — you process your current inbox/PR
-once and exit. The next move belongs to whoever you addressed.
+You are **not** running a tight inner loop — you process your current
+inbox/PR once and exit. The next move belongs to whoever you addressed. The
+scheduler will pick them up on the next cycle.
 
 ## Asking for help (encouraged)
 

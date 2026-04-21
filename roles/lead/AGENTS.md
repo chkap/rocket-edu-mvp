@@ -59,27 +59,11 @@ of the issue numbers you created and a one-line "next tick: worker" hint.
 
 ## 👁️ Watchdog duties (always-on supervisor)
 
-**You are the only agent invoked on a schedule** (every 10 min via cron).
-Worker, Verifier, and Advisory are **message-driven** — they only run when
-*you* spawn them after detecting a `role:<them> + status:pending` issue or a
-PR/comment that needs their attention. You orchestrate; they execute.
-
-### How to spawn another role
-
-Use the `tick.sh` launcher from a shell tool call. The mutex is already held
-(env `AGENTS_LOCK_HELD=1` is inherited), so the spawned tick runs serially
-inside your slot:
-
-```bash
-bash .agents/tick.sh worker          # process worker inbox
-bash .agents/tick.sh verifier        # process verifier inbox
-bash .agents/tick.sh advisory        # process advisory inbox
-bash .agents/tick.sh worker "human-style directive"   # inject a directive
-```
-
-**At most one** spawn per tick. Pick the most urgent role. If multiple roles
-have work, spawn one now and let the next watchdog tick handle the rest —
-never run two agents back-to-back in the same tick.
+**You are the only role that runs every cycle** of the scheduler
+(`.agents/loop.sh`). Worker, Verifier, and Advisory are launched only when
+*they* have a `status:pending` issue addressed to them — the loop checks each
+inbox per cycle and runs the role serially. **You do NOT spawn other agents.**
+Your job is to label, route, comment, and unblock — the loop handles execution.
 
 ### Watchdog checklist (every tick, in order)
 
@@ -92,14 +76,14 @@ never run two agents back-to-back in the same tick.
 4. **Untriaged PRs** — any open PR without `needs-verification`: add the
    label, then ping verifier via issue comment.
 5. **Label hygiene** — fix any open issue missing `role:*`, `status:*`,
-   `priority:*`.
+   `priority:*`. **Critical: a task only runs when its `role:<x>` matches an
+   inbox AND `status:pending` is set.** Flip `status:blocked` → `status:pending`
+   when deps are merged.
 6. **Dependency unblocking** — issues whose `deps #N` are now closed/merged:
    flip `status:blocked` → `status:pending`.
 7. **Goal drift / contradictions** — flag with a comment; if Advisory
    research conflicts with shipped code, open a `needs-verification` issue.
-8. **Spawn**: pick the single highest-priority pending role-task and spawn it
-   (see above).
-9. **Done?** — if GOAL acceptance is fully met (verifier merged all required
+8. **Done?** — if GOAL acceptance is fully met (verifier merged all required
    PRs, CI green on main, no open `role:worker` blockers), close the parent
    goal issue with a final summary AND **halt the crew**:
 
@@ -113,9 +97,8 @@ never run two agents back-to-back in the same tick.
    git add .agents/STOPPED && git commit -m "agents: halt crew — GOAL #<N> done" && git push
    ```
 
-   The presence of `.agents/STOPPED` makes every future `tick.sh` exit
-   immediately (cron becomes a no-op). The human removes the file when they
-   file the next GOAL.
+   The presence of `.agents/STOPPED` makes `loop.sh` exit on its next cycle
+   check. The human removes the file when they file the next GOAL.
 
 If everything is healthy and nothing to spawn, post **one** short status
 heartbeat on the GOAL issue and exit:
