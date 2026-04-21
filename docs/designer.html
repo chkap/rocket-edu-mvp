@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Interactively design a multi-stage rocket, inspect per-stage delta-v and thrust-to-weight ratio, and see a velocity chart update live."
+    />
+    <title>Multi-stage Rocket Designer</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./designer.css" />
+    <script type="module" src="./designer.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Multi-stage rocket designer</h1>
+      <p>
+        Experiment with staged rockets using the shared core library: tune masses, Isp, thrust,
+        and payload to see how the stack changes in real time.
+      </p>
+
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Equation guide</a></li>
+          <li><a href="./designer.html" aria-current="page">Multi-stage designer</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="content">
+      <section aria-labelledby="designer-intro-title">
+        <h2 id="designer-intro-title">Start from a sourced two-stage example</h2>
+        <p>
+          The default stack uses Falcon 9 Full Thrust stage numbers from issue #24’s advisory
+          comment so this page stays educational without inventing extra aerospace data.
+        </p>
+      </section>
+
+      <section aria-labelledby="designer-controls-title">
+        <div class="designer-toolbar">
+          <div>
+            <h2 id="designer-controls-title">Vehicle inputs</h2>
+            <p class="muted">
+              Use 1 to 6 stages. Inputs update the outputs, capability label, and chart on every
+              change.
+            </p>
+          </div>
+
+          <div class="designer-toolbar-actions" aria-label="Stage count controls">
+            <button type="button" id="remove-stage">Remove stage</button>
+            <p id="stage-count" class="stage-count" aria-live="polite">2 stages</p>
+            <button type="button" id="add-stage">Add stage</button>
+          </div>
+        </div>
+
+        <form id="designer-form" novalidate>
+          <p id="designer-error" class="callout callout-danger" role="alert" aria-live="polite" hidden></p>
+          <div id="stage-list" class="stage-list"></div>
+        </form>
+      </section>
+
+      <section aria-labelledby="designer-results-title">
+        <h2 id="designer-results-title">Live stack results</h2>
+
+        <div class="summary-grid">
+          <article class="summary-card">
+            <h3>Total stack Δv</h3>
+            <p id="total-dv" class="summary-value" aria-live="polite">—</p>
+          </article>
+
+          <article class="summary-card">
+            <h3>Capability label</h3>
+            <p id="capability-label" class="summary-value" aria-live="polite">—</p>
+          </article>
+
+          <article class="summary-card">
+            <h3>Chart status</h3>
+            <p id="chart-status-summary" class="summary-value" aria-live="polite">Ready</p>
+          </article>
+        </div>
+
+        <p id="twr-warning" class="callout callout-warning" role="alert" aria-live="polite" hidden></p>
+      </section>
+
+      <section aria-labelledby="chart-title">
+        <h2 id="chart-title">Velocity vs burned propellant fraction</h2>
+        <p class="muted">
+          The chart shows how cumulative ideal Δv grows as each stage burns through its propellant.
+        </p>
+
+        <figure class="chart-figure">
+          <svg
+            id="velocity-chart"
+            class="velocity-chart"
+            viewBox="0 0 720 420"
+            role="img"
+            aria-labelledby="chart-svg-title chart-svg-desc"
+          >
+            <title id="chart-svg-title">Velocity gain versus burned propellant fraction</title>
+            <desc id="chart-svg-desc">
+              A line chart showing cumulative ideal delta-v as the rocket burns propellant across
+              all stages.
+            </desc>
+          </svg>
+          <figcaption id="chart-caption">
+            X-axis: burned propellant fraction. Y-axis: cumulative ideal Δv in meters per second.
+          </figcaption>
+        </figure>
+
+        <p id="chart-error" class="callout callout-danger" aria-live="polite" hidden>
+          Fix the highlighted inputs to restore the chart.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <small>
+        Multi-stage designer powered by <code>docs/lib/rocket.js</code> ·
+        <a href="./index.html">Back to the equation guide</a>
+      </small>
+    </footer>
+  </body>
+</html>
