@@ -20,6 +20,14 @@ set -euo pipefail
 
 ROLE="${1:-}"; shift || true
 
+# ── Stop sentinel: lead can halt the whole crew when GOAL is done ────────
+STOP_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/STOPPED"
+if [[ -f "$STOP_FILE" ]]; then
+  echo "[$ROLE] STOPPED sentinel present ($STOP_FILE) — crew is halted. Reason:" >&2
+  cat "$STOP_FILE" >&2 || true
+  exit 0
+fi
+
 # ── Mutex: at most one agent works at any time ────────────────────────────
 # Cron + manual + lead-spawned ticks all share .agents/.lock.
 # Lead can spawn other roles by setting AGENTS_LOCK_HELD=1 (it already holds

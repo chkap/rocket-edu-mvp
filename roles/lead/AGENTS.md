@@ -99,7 +99,23 @@ never run two agents back-to-back in the same tick.
    research conflicts with shipped code, open a `needs-verification` issue.
 8. **Spawn**: pick the single highest-priority pending role-task and spawn it
    (see above).
-9. **Done?** — if GOAL acceptance is fully met, close the parent goal.
+9. **Done?** — if GOAL acceptance is fully met (verifier merged all required
+   PRs, CI green on main, no open `role:worker` blockers), close the parent
+   goal issue with a final summary AND **halt the crew**:
+
+   ```bash
+   cat > .agents/STOPPED <<'EOF'
+   GOAL #<N> reached at <UTC ts>.
+   Summary: <2-3 lines: what shipped, what was verified>.
+   PRs merged: #29, #...
+   To resume: rm .agents/STOPPED
+   EOF
+   git add .agents/STOPPED && git commit -m "agents: halt crew — GOAL #<N> done" && git push
+   ```
+
+   The presence of `.agents/STOPPED` makes every future `tick.sh` exit
+   immediately (cron becomes a no-op). The human removes the file when they
+   file the next GOAL.
 
 If everything is healthy and nothing to spawn, post **one** short status
 heartbeat on the GOAL issue and exit:
