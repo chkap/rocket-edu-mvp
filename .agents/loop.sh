@@ -49,6 +49,27 @@ while true; do
     if [[ "$role" == "lead" ]]; then
       should_run=1
       reason="watchdog (always)"
+    elif [[ "$role" == "verifier" ]]; then
+      # verifier inbox = pending issues OR open PRs needing review
+      icount="$(gh issue list \
+        --label "role:verifier" --label "status:pending" \
+        --state open --json number --limit 1 2>/dev/null \
+        | jq 'length' 2>/dev/null || echo 0)"
+      pcount="$(gh pr list --state open \
+        --json number,labels --limit 50 2>/dev/null \
+        | jq '[.[] | select(.labels | map(.name) | any(. == "needs-verification" or . == "role:verifier"))] | length' 2>/dev/null || echo 0)"
+      # Also catch PRs with no labels at all (lead may not have labeled yet)
+      ucount="$(gh pr list --state open \
+        --json number,labels --limit 50 2>/dev/null \
+        | jq '[.[] | select(.labels | length == 0)] | length' 2>/dev/null || echo 0)"
+      total=$(( ${icount:-0} + ${pcount:-0} + ${ucount:-0} ))
+      if [[ "$total" -gt 0 ]]; then
+        should_run=1
+        reason="issues=${icount} prs=${pcount} unlabeled-prs=${ucount}"
+      else
+        should_run=0
+        reason="empty inbox, skip"
+      fi
     else
       count="$(gh issue list \
         --label "role:${role}" --label "status:pending" \
