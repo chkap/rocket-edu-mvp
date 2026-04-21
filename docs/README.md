@@ -1,5 +1,20 @@
 Open `index.html` or `designer-v2.html` in a browser, or run `python3 -m http.server`.
 
+## Smoke test
+
+- Run `npm run smoke` from the repository root to execute the designer-v2 smoke
+  test in Vitest + JSDOM.
+- The smoke test loads `designer-v2.html`, selects the Falcon 9 preset, clicks
+  Analyze, and checks the verdict and total Δv summary.
+
+## Engine catalog contract
+
+- Add new designer-v2 engines in `docs/data/engines.json`.
+- Each engine needs a unique `key` plus thrust, Isp, mass, propellant, and any
+  fixed-mass metadata consumed by `docs/lib/designer_v2/physics.js`.
+- Add matching UI labels in both `docs/i18n/en.json` and `docs/i18n/zh.json`
+  under `designer_v2.engine.<key>`.
+
 ## i18n contract
 
 - All user-facing strings live in `docs/i18n/en.json` and `docs/i18n/zh.json`.

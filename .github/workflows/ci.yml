@@ -27,10 +27,31 @@ jobs:
       - name: Run Vitest
         run: npm test
 
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run designer-v2 smoke test
+        run: npm run smoke
+
   a11y:
     name: a11y
     runs-on: ubuntu-latest
-    needs: unit-tests
+    needs: [unit-tests, smoke]
 
     steps:
       - name: Check out repository
@@ -60,7 +81,8 @@ jobs:
               "collect": {
                 "url": [
                   "http://127.0.0.1:8080/designer.html",
-                  "http://127.0.0.1:8080/compare.html"
+                  "http://127.0.0.1:8080/compare.html",
+                  "http://127.0.0.1:8080/designer-v2.html"
                 ],
                 "numberOfRuns": 1
               },
@@ -78,5 +100,5 @@ jobs:
           }
           EOF
 
-          npx --yes wait-on http://127.0.0.1:8080/designer.html http://127.0.0.1:8080/compare.html
+          npx --yes wait-on http://127.0.0.1:8080/designer.html http://127.0.0.1:8080/compare.html http://127.0.0.1:8080/designer-v2.html
           npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.json
