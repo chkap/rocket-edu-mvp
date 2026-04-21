@@ -212,6 +212,7 @@
   "designer_v2.metric.structural": "Structural index",
   "designer_v2.structural.realistic": "Realistic",
   "designer_v2.structural.optimistic": "Optimistic",
+  "designer_v2.structural.fixed": "Fixed mass model",
   "designer_v2.structural.unphysical": "Blocked",
   "designer_v2.summary.title": "Sticky mission summary",
   "designer_v2.summary.total_dv": "Total Δv",

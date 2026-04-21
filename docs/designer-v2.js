@@ -649,12 +649,19 @@ function structuralBadge(entry) {
     return '—';
   }
 
-  const icon = entry.health === 'realistic' ? '🟢' : entry.health === 'optimistic' ? '🟡' : '🔴';
+  const icon =
+    entry.health === 'realistic'
+      ? '🟢'
+      : entry.health === 'optimistic'
+        ? '🟡'
+        : entry.health === 'fixed'
+          ? '⚪'
+          : '🔴';
   const label = t(`designer_v2.structural.${entry.health}`);
+  const ratio =
+    typeof entry.ratio === 'number' ? ` (${ratioFmt.format(entry.ratio)})` : '';
 
-  return `<span class="designer-v2-structural is-${entry.health}">${icon} ${label} (${ratioFmt.format(
-    entry.ratio ?? 0
-  )})</span>`;
+  return `<span class="designer-v2-structural is-${entry.health}">${icon} ${label}${ratio}</span>`;
 }
 
 function liquidBoosterEngines() {
