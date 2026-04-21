@@ -1,0 +1,208 @@
+{
+  "g0": 9.80665,
+  "engines": [
+    {
+      "key": "merlin_1d",
+      "thrust_sl_kN": 845,
+      "thrust_vac_kN": 981,
+      "isp_sl": 282,
+      "isp_vac": 311,
+      "mass_kg": 470,
+      "propellant": "RP1_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/SpaceX_Merlin"]
+    },
+    {
+      "key": "merlin_vac",
+      "thrust_sl_kN": 0,
+      "thrust_vac_kN": 934,
+      "isp_sl": 0,
+      "isp_vac": 348,
+      "mass_kg": 550,
+      "propellant": "RP1_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": [
+        "https://en.wikipedia.org/wiki/Falcon_9_Full_Thrust",
+        "http://www.astronautix.com/m/merlin1dvac.html"
+      ]
+    },
+    {
+      "key": "raptor_2",
+      "thrust_sl_kN": 2260,
+      "thrust_vac_kN": 2530,
+      "isp_sl": 327,
+      "isp_vac": 350,
+      "mass_kg": 1630,
+      "propellant": "CH4_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/SpaceX_Raptor"]
+    },
+    {
+      "key": "raptor_vac",
+      "thrust_sl_kN": 0,
+      "thrust_vac_kN": 2530,
+      "isp_sl": 0,
+      "isp_vac": 380,
+      "mass_kg": 1900,
+      "propellant": "CH4_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_decision_source": "https://github.com/chkap/rocket-edu-mvp/issues/35#issuecomment-4289967660",
+      "_citations": ["https://en.wikipedia.org/wiki/SpaceX_Raptor"],
+      "_assumption": "GOAL.md value for dry mass; Advisory could not find a cited public source."
+    },
+    {
+      "key": "rs25",
+      "thrust_sl_kN": 1860,
+      "thrust_vac_kN": 2279,
+      "isp_sl": 366,
+      "isp_vac": 452.3,
+      "mass_kg": 3177,
+      "propellant": "LH2_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/RS-25"]
+    },
+    {
+      "key": "f1",
+      "thrust_sl_kN": 6770,
+      "thrust_vac_kN": 7770,
+      "isp_sl": 263,
+      "isp_vac": 304,
+      "mass_kg": 8400,
+      "propellant": "RP1_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/Rocketdyne_F-1"]
+    },
+    {
+      "key": "rl10b2",
+      "thrust_sl_kN": 0,
+      "thrust_vac_kN": 110.1,
+      "isp_sl": 0,
+      "isp_vac": 465.5,
+      "mass_kg": 301,
+      "propellant": "LH2_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/RL10"]
+    },
+    {
+      "key": "vulcain2",
+      "thrust_sl_kN": 939.5,
+      "thrust_vac_kN": 1350,
+      "isp_sl": 318,
+      "isp_vac": 434,
+      "mass_kg": 1800,
+      "propellant": "LH2_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["http://www.astronautix.com/v/vulcain2.html"]
+    },
+    {
+      "key": "be4",
+      "thrust_sl_kN": 2400,
+      "thrust_vac_kN": 2640,
+      "isp_sl": 311,
+      "isp_vac": 340,
+      "mass_kg": 5400,
+      "propellant": "CH4_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_decision_source": "https://github.com/chkap/rocket-edu-mvp/issues/35#issuecomment-4289967660",
+      "_citations": [
+        "https://en.wikipedia.org/wiki/BE-4",
+        "https://www.ulalaunch.com/docs/default-source/news-items/be-4_fact_sheet_web_final_2.pdf"
+      ],
+      "_assumption": "Thrust values follow GOAL.md; Isp and mass follow Advisory guidance from the public BE-4 references."
+    },
+    {
+      "key": "nk33",
+      "thrust_sl_kN": 1510,
+      "thrust_vac_kN": 1680,
+      "isp_sl": 297,
+      "isp_vac": 331,
+      "mass_kg": 1240,
+      "propellant": "RP1_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/NK-33"]
+    },
+    {
+      "key": "rd180",
+      "thrust_sl_kN": 3830,
+      "thrust_vac_kN": 4150,
+      "isp_sl": 311,
+      "isp_vac": 338,
+      "mass_kg": 5480,
+      "propellant": "RP1_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/RD-180"]
+    },
+    {
+      "key": "j2",
+      "thrust_sl_kN": 486.2,
+      "thrust_vac_kN": 1033.1,
+      "isp_sl": 200,
+      "isp_vac": 421,
+      "mass_kg": 1788.1,
+      "propellant": "LH2_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/Rocketdyne_J-2"]
+    },
+    {
+      "key": "yf77",
+      "thrust_sl_kN": 510,
+      "thrust_vac_kN": 700,
+      "isp_sl": 310,
+      "isp_vac": 430,
+      "mass_kg": 2700,
+      "propellant": "LH2_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": [
+        "http://astronautix.com/y/yf-77.html",
+        "https://en.wikipedia.org/wiki/YF-77"
+      ]
+    },
+    {
+      "key": "yf75d",
+      "thrust_sl_kN": 0,
+      "thrust_vac_kN": 88.36,
+      "isp_sl": 0,
+      "isp_vac": 442.6,
+      "mass_kg": 265,
+      "propellant": "LH2_LOX",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_citations": ["https://en.wikipedia.org/wiki/YF-75D"]
+    },
+    {
+      "key": "srb_blob",
+      "thrust_sl_kN": 0,
+      "thrust_vac_kN": 16000,
+      "isp_sl": 0,
+      "isp_vac": 269,
+      "mass_kg": 99000,
+      "propellant": "SOLID",
+      "fixed_propellant_kg": 631000,
+      "dry_mass_model": "fixed",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_decision_source": "https://github.com/chkap/rocket-edu-mvp/issues/35#issuecomment-4289967660",
+      "_citations": [
+        "https://en.wikipedia.org/wiki/Space_Launch_System",
+        "https://www.nasa.gov/reference/space-launch-system-solid-rocket-booster/"
+      ],
+      "_assumption": "Empty/propellant split follows GOAL.md §4; the cited SLS references support the ~730 t gross mass."
+    },
+    {
+      "key": "lm5_booster_blob",
+      "thrust_sl_kN": 2400,
+      "thrust_vac_kN": 2680,
+      "isp_sl": 300,
+      "isp_vac": 335,
+      "mass_kg": 13800,
+      "propellant": "RP1_LOX",
+      "fixed_propellant_kg": 142800,
+      "dry_mass_model": "fixed",
+      "_source": "https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063",
+      "_decision_source": "https://github.com/chkap/rocket-edu-mvp/issues/35#issuecomment-4289967660",
+      "_citations": [
+        "https://en.wikipedia.org/wiki/Long_March_5",
+        "https://en.wikipedia.org/wiki/YF-100"
+      ],
+      "_assumption": "Fallback blob for Long March 5 boosters because the YF-100 page does not publish a dry mass."
+    }
+  ]
+}
