@@ -5,6 +5,7 @@ import {
   stageDeltaV,
   validateStage,
 } from './lib/rocket.js';
+import { formatMessage, initPage, t } from './lib/i18n.js';
 
 const MIN_STAGES = 1;
 const MAX_STAGES = 6;
@@ -41,90 +42,26 @@ function cloneStageTemplate(index) {
 
 function stageLabel(index, total) {
   if (total === 1) {
-    return 'Single stage';
+    return t('designer.stage.single');
   }
 
-  return `Stage ${index + 1}`;
+  return formatMessage('designer.stage.number', { number: index + 1 });
 }
 
 function stageRoleLabel(index, total) {
   if (total === 1) {
-    return 'Top and only stage';
+    return t('designer.stage.role.only');
   }
 
   if (index === 0) {
-    return 'Bottom stage';
+    return t('designer.stage.role.bottom');
   }
 
   if (index === total - 1) {
-    return 'Top stage';
+    return t('designer.stage.role.top');
   }
 
-  return 'Middle stage';
-}
-
-function buildStageMarkup(stage, index, totalStages) {
-  const prefix = `stage-${index}`;
-  const isTopStage = index === totalStages - 1;
-
-  return `
-    <article class="stage-card" aria-labelledby="${prefix}-title">
-      <div class="stage-card-header">
-        <div>
-          <h3 id="${prefix}-title">${stageLabel(index, totalStages)}</h3>
-          <p class="stage-role">${stageRoleLabel(index, totalStages)}</p>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        ${buildInputMarkup({
-          id: `${prefix}-m_p`,
-          name: `stage-${index}-m_p`,
-          label: 'Propellant mass, m_p (kg)',
-          value: stage.m_p,
-        })}
-        ${buildInputMarkup({
-          id: `${prefix}-m_s`,
-          name: `stage-${index}-m_s`,
-          label: 'Structural mass, m_s (kg)',
-          value: stage.m_s,
-        })}
-        ${buildInputMarkup({
-          id: `${prefix}-isp`,
-          name: `stage-${index}-Isp`,
-          label: 'Isp (seconds)',
-          value: stage.Isp,
-        })}
-        ${buildInputMarkup({
-          id: `${prefix}-thrust`,
-          name: `stage-${index}-thrust_kN`,
-          label: 'Thrust (kN)',
-          value: stage.thrust_kN,
-        })}
-        ${
-          isTopStage
-            ? buildInputMarkup({
-                id: 'top-payload',
-                name: 'finalPayload',
-                label: 'Payload above top stage (kg)',
-                value: state.finalPayload,
-              })
-            : ''
-        }
-      </div>
-
-      <div class="stage-metrics" aria-live="polite">
-        <article class="metric-card">
-          <h4>Stage Δv</h4>
-          <p id="${prefix}-dv" class="metric-value">—</p>
-        </article>
-        <article class="metric-card">
-          <h4>Initial TWR</h4>
-          <p id="${prefix}-twr" class="metric-value">—</p>
-        </article>
-      </div>
-    </article>
-  `;
+  return t('designer.stage.role.middle');
 }
 
 function buildInputMarkup({ id, name, label, value }) {
@@ -146,6 +83,70 @@ function buildInputMarkup({ id, name, label, value }) {
   `;
 }
 
+function buildStageMarkup(stage, index, totalStages) {
+  const prefix = `stage-${index}`;
+  const isTopStage = index === totalStages - 1;
+
+  return `
+    <article class="stage-card" aria-labelledby="${prefix}-title">
+      <div class="stage-card-header">
+        <div>
+          <h3 id="${prefix}-title">${stageLabel(index, totalStages)}</h3>
+          <p class="stage-role">${stageRoleLabel(index, totalStages)}</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        ${buildInputMarkup({
+          id: `${prefix}-m_p`,
+          name: `stage-${index}-m_p`,
+          label: t('designer.field.propellant_mass'),
+          value: stage.m_p,
+        })}
+        ${buildInputMarkup({
+          id: `${prefix}-m_s`,
+          name: `stage-${index}-m_s`,
+          label: t('designer.field.structural_mass'),
+          value: stage.m_s,
+        })}
+        ${buildInputMarkup({
+          id: `${prefix}-isp`,
+          name: `stage-${index}-Isp`,
+          label: t('designer.field.isp'),
+          value: stage.Isp,
+        })}
+        ${buildInputMarkup({
+          id: `${prefix}-thrust`,
+          name: `stage-${index}-thrust_kN`,
+          label: t('designer.field.thrust'),
+          value: stage.thrust_kN,
+        })}
+        ${
+          isTopStage
+            ? buildInputMarkup({
+                id: 'top-payload',
+                name: 'finalPayload',
+                label: t('designer.field.payload'),
+                value: state.finalPayload,
+              })
+            : ''
+        }
+      </div>
+
+      <div class="stage-metrics" aria-live="polite">
+        <article class="metric-card">
+          <h4>${t('designer.metric.stage_dv')}</h4>
+          <p id="${prefix}-dv" class="metric-value">—</p>
+        </article>
+        <article class="metric-card">
+          <h4>${t('designer.metric.initial_twr')}</h4>
+          <p id="${prefix}-twr" class="metric-value">—</p>
+        </article>
+      </div>
+    </article>
+  `;
+}
+
 function renderStageCards() {
   const stageList = document.getElementById('stage-list');
   const stageCount = document.getElementById('stage-count');
@@ -160,7 +161,10 @@ function renderStageCards() {
     .map((stage, index) => buildStageMarkup(stage, index, state.stages.length))
     .join('');
 
-  stageCount.textContent = `${state.stages.length} ${state.stages.length === 1 ? 'stage' : 'stages'}`;
+  stageCount.textContent = formatMessage(
+    state.stages.length === 1 ? 'designer.stage.count.one' : 'designer.stage.count.other',
+    { count: state.stages.length }
+  );
   addButton.disabled = state.stages.length >= MAX_STAGES;
   removeButton.disabled = state.stages.length <= MIN_STAGES;
 }
@@ -178,18 +182,14 @@ function syncStateFromInputs() {
 }
 
 function resetFieldErrors() {
-  document
-    .querySelectorAll('#designer-form .field-error')
-    .forEach((el) => {
-      el.textContent = '';
-    });
+  document.querySelectorAll('#designer-form .field-error').forEach((el) => {
+    el.textContent = '';
+  });
 
-  document
-    .querySelectorAll('#designer-form input')
-    .forEach((el) => {
-      el.classList.remove('input-invalid');
-      el.removeAttribute('aria-invalid');
-    });
+  document.querySelectorAll('#designer-form input').forEach((el) => {
+    el.classList.remove('input-invalid');
+    el.removeAttribute('aria-invalid');
+  });
 }
 
 function setFieldError(id, message) {
@@ -210,12 +210,12 @@ function readPositiveField(rawValue, id, label, errors) {
   const value = Number(rawValue);
 
   if (rawValue === '' || !Number.isFinite(value)) {
-    errors.push({ id, message: `${label} must be a finite number.` });
+    errors.push({ id, message: formatMessage('designer.error.finite', { label }) });
     return null;
   }
 
   if (value <= 0) {
-    errors.push({ id, message: `${label} must be greater than 0.` });
+    errors.push({ id, message: formatMessage('designer.error.positive', { label }) });
     return null;
   }
 
@@ -226,12 +226,12 @@ function readNonNegativeField(rawValue, id, label, errors) {
   const value = Number(rawValue);
 
   if (rawValue === '' || !Number.isFinite(value)) {
-    errors.push({ id, message: `${label} must be a finite number.` });
+    errors.push({ id, message: formatMessage('designer.error.finite', { label }) });
     return null;
   }
 
   if (value < 0) {
-    errors.push({ id, message: `${label} must be greater than or equal to 0.` });
+    errors.push({ id, message: formatMessage('designer.error.non_negative', { label }) });
     return null;
   }
 
@@ -242,16 +242,31 @@ function parseState() {
   const errors = [];
 
   const stages = state.stages.map((stage, index) => ({
-    m_p: readPositiveField(stage.m_p, `stage-${index}-m_p`, 'Propellant mass', errors),
-    m_s: readPositiveField(stage.m_s, `stage-${index}-m_s`, 'Structural mass', errors),
-    Isp: readPositiveField(stage.Isp, `stage-${index}-isp`, 'Isp', errors),
-    thrust_kN: readPositiveField(stage.thrust_kN, `stage-${index}-thrust`, 'Thrust', errors),
+    m_p: readPositiveField(
+      stage.m_p,
+      `stage-${index}-m_p`,
+      t('designer.error.propellant_mass'),
+      errors
+    ),
+    m_s: readPositiveField(
+      stage.m_s,
+      `stage-${index}-m_s`,
+      t('designer.error.structural_mass'),
+      errors
+    ),
+    Isp: readPositiveField(stage.Isp, `stage-${index}-isp`, t('designer.error.isp'), errors),
+    thrust_kN: readPositiveField(
+      stage.thrust_kN,
+      `stage-${index}-thrust`,
+      t('designer.error.thrust'),
+      errors
+    ),
   }));
 
   const finalPayload = readNonNegativeField(
     state.finalPayload,
     'top-payload',
-    'Payload',
+    t('designer.error.payload'),
     errors
   );
 
@@ -328,7 +343,7 @@ function renderMetrics(computation) {
 
   totalDvEl.textContent = `${numberFmt.format(Math.round(computation.total))} m/s`;
   capabilityEl.textContent = computation.capability;
-  chartStatusSummary.textContent = 'Ready';
+  chartStatusSummary.textContent = t('designer.summary.ready');
 
   computation.perStage.forEach((stage, index) => {
     const dvEl = document.getElementById(`stage-${index}-dv`);
@@ -344,8 +359,9 @@ function renderMetrics(computation) {
   });
 
   if (computation.perStage[0].twr < 1) {
-    twrWarning.textContent =
-      `Warning: Stage 1 initial TWR is ${twrFmt.format(computation.perStage[0].twr)}, so the rocket is underpowered at liftoff.`;
+    twrWarning.textContent = formatMessage('designer.warning.underpowered', {
+      twr: twrFmt.format(computation.perStage[0].twr),
+    });
     twrWarning.hidden = false;
   } else {
     twrWarning.textContent = '';
@@ -365,12 +381,12 @@ function renderInvalidState(errors) {
   errors.forEach(({ id, message }) => setFieldError(id, message));
 
   if (errorEl) {
-    errorEl.textContent = 'Fix the highlighted inputs to update the results and chart.';
+    errorEl.textContent = t('designer.error.fix_inputs');
     errorEl.hidden = false;
   }
 
   if (chartStatusSummary) {
-    chartStatusSummary.textContent = 'Disabled';
+    chartStatusSummary.textContent = t('designer.summary.disabled');
   }
 
   if (totalDvEl) {
@@ -471,7 +487,7 @@ function renderChart(chartData) {
           y2="${height - margin.bottom}"
         ></line>
         <text class="chart-stage-label" x="${x(boundary.fraction)}" y="${margin.top + 16}">
-          Stage ${boundary.stage}
+          ${formatMessage('designer.stage.number', { number: boundary.stage })}
         </text>
       `
     )
@@ -480,11 +496,8 @@ function renderChart(chartData) {
   const finalPoint = chartData.points[chartData.points.length - 1];
 
   chart.innerHTML = `
-    <title id="chart-svg-title">Velocity gain versus burned propellant fraction</title>
-    <desc id="chart-svg-desc">
-      A line chart showing cumulative ideal delta-v as the rocket burns propellant across all
-      stages.
-    </desc>
+    <title id="chart-svg-title">${t('designer.chart.svg_title')}</title>
+    <desc id="chart-svg-desc">${t('designer.chart.svg_desc')}</desc>
     <line class="chart-axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
     <line class="chart-axis" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
     ${gridLines}
@@ -492,9 +505,9 @@ function renderChart(chartData) {
     ${boundaries}
     <path class="chart-line" d="${linePath}"></path>
     <circle class="chart-point" cx="${x(finalPoint.fraction)}" cy="${y(finalPoint.deltaV)}" r="5"></circle>
-    <text class="chart-label" x="${width / 2}" y="${height - 8}" text-anchor="middle">Burned propellant fraction</text>
+    <text class="chart-label" x="${width / 2}" y="${height - 8}" text-anchor="middle">${t('designer.chart.axis_x')}</text>
     <text class="chart-label" x="18" y="${height / 2}" text-anchor="middle" transform="rotate(-90 18 ${height / 2})">
-      Cumulative ideal Δv (m/s)
+      ${t('designer.chart.axis_y')}
     </text>
   `;
 }
@@ -529,7 +542,7 @@ function updateOutputs() {
   renderMetrics({
     perStage,
     total: stack.total,
-    capability: capabilityLabel(stack.total),
+    capability: t(`capability.${capabilityLabel(stack.total)}`),
   });
 
   renderChart(buildChartData(parsed.stages, payloadMasses));
@@ -560,6 +573,11 @@ function removeStage() {
 }
 
 function init() {
+  initPage({
+    titleKey: 'page.designer.title',
+    descriptionKey: 'page.designer.description',
+  });
+
   const addButton = document.getElementById('add-stage');
   const removeButton = document.getElementById('remove-stage');
   const form = document.getElementById('designer-form');
