@@ -1,4 +1,4 @@
-Open `index.html` in a browser or run `python3 -m http.server`.
+Open `index.html` or `designer-v2.html` in a browser, or run `python3 -m http.server`.
 
 ## i18n contract
 
