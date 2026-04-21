@@ -1,2 +1,3 @@
 .agents/log
 .agents/cfg/
+.agents/.lock
