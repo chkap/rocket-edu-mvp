@@ -40,8 +40,26 @@ describe('designer-v2 helpers', () => {
     const result = analyze(config);
 
     expect(config.boosters?.count).toBe(2);
+    expect(draft.boosters?.type).toBe('solid');
     expect(config.stages).toHaveLength(2);
     expect(result.total.mission_target).toBe('LEO');
     expect(result.total.dv_kms).toBeGreaterThan(9);
+  });
+
+  it('keeps the dedicated booster card inactive at count 0', () => {
+    const draft = loadDraftFromPreset('custom', catalog.engines);
+    const config = buildAnalyzeConfig(draft);
+
+    expect(draft.boosters?.count).toBe('0');
+    expect(config.boosters).toBeNull();
+  });
+
+  it('preserves liquid booster presets in the analyze config', () => {
+    const draft = loadDraftFromPreset('longMarch5', catalog.engines);
+    const config = buildAnalyzeConfig(draft);
+
+    expect(draft.boosters?.type).toBe('liquid');
+    expect(config.boosters?.engineKey).toBe('lm5_booster_blob');
+    expect(config.boosters?.count).toBe(4);
   });
 });

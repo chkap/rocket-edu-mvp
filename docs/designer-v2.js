@@ -13,6 +13,10 @@ const DEFAULT_TANK_FRACTIONS = {
   CH4_LOX: 0.07,
   LH2_LOX: 0.12,
 };
+const BOOSTER_TYPES = {
+  LIQUID: 'liquid',
+  SOLID: 'solid',
+};
 
 export const MISSION_MARKERS = [
   { labelKey: 'designer_v2.mission.leo', thresholdKmS: 9.4, mission: 'LEO' },
@@ -136,8 +140,16 @@ function defaultBoosterEngine(engines) {
   return getEngine('srb_blob', engines) ?? getEngine('lm5_booster_blob', engines) ?? engines[0] ?? null;
 }
 
+function defaultLiquidBoosterEngine(engines) {
+  return getEngine('lm5_booster_blob', engines) ?? engines.find((engine) => engine.propellant !== 'SOLID') ?? null;
+}
+
 export function defaultTankFractionForPropellant(propellant) {
   return DEFAULT_TANK_FRACTIONS[propellant] ?? 0.06;
+}
+
+function boosterTypeForEngine(engine) {
+  return engine?.propellant === 'SOLID' ? BOOSTER_TYPES.SOLID : BOOSTER_TYPES.LIQUID;
 }
 
 export function canShowNozzleToggle(engine) {
@@ -206,14 +218,19 @@ function buildStageDraft(engines, stage = {}, index = 0) {
 }
 
 function buildBoosterDraft(engines, boosters = {}) {
-  const engine = getEngine(boosters.engineKey, engines) ?? defaultBoosterEngine(engines);
+  const requestedType = boosters.type ?? boosterTypeForEngine(getEngine(boosters.engineKey, engines));
+  const engine =
+    requestedType === BOOSTER_TYPES.SOLID
+      ? getEngine('srb_blob', engines) ?? defaultBoosterEngine(engines)
+      : getEngine(boosters.engineKey, engines) ?? defaultLiquidBoosterEngine(engines) ?? defaultBoosterEngine(engines);
   const propellantMassKg = boosters.propellantMassKg ?? engine?.fixed_propellant_kg ?? 250000;
 
   return {
     nameKey: boosters.nameKey ?? null,
     customLabel: boosters.label ?? '',
+    type: requestedType ?? BOOSTER_TYPES.SOLID,
     engineKey: engine?.key ?? '',
-    count: editableNumber(boosters.count ?? 2, 0),
+    count: editableNumber(boosters.count ?? 0, 0),
     engineCount: editableNumber(boosters.engineCount ?? 1, 0),
     nozzle: boosters.nozzle ?? 'auto',
     propellantTons: editableNumber(propellantMassKg / 1000, 1),
@@ -232,7 +249,7 @@ export function loadDraftFromPreset(presetId, engines) {
       presetId: 'custom',
       payloadMassKg: '1000',
       stages: [buildStageDraft(engines, {}, 0, 1)],
-      boosters: null,
+      boosters: buildBoosterDraft(engines, { count: 0, type: BOOSTER_TYPES.SOLID }),
     };
   }
 
@@ -252,13 +269,13 @@ export function loadDraftFromPreset(presetId, engines) {
     presetId: option.id,
     payloadMassKg: editableNumber(option.preset.payloadMassKg, 0),
     stages,
-    boosters: option.preset.boosters
-      ? buildBoosterDraft(engines, {
-          ...option.preset.boosters,
-          nameKey: option.boosterNameKey ?? null,
-        })
-      : null,
-  };
+      boosters: option.preset.boosters
+        ? buildBoosterDraft(engines, {
+            ...option.preset.boosters,
+            nameKey: option.boosterNameKey ?? null,
+          })
+        : buildBoosterDraft(engines, { count: 0, type: BOOSTER_TYPES.SOLID }),
+    };
 }
 
 export function reorderUpperStages(stages, fromIndex, toIndex) {
@@ -282,7 +299,7 @@ function applyDraft(draft) {
   state.presetId = draft.presetId;
   state.payloadMassKg = draft.payloadMassKg;
   state.stages = draft.stages;
-  state.boosters = draft.boosters;
+  state.boosters = draft.boosters ?? buildBoosterDraft(state.engines, { count: 0, type: BOOSTER_TYPES.SOLID });
 }
 
 function syncStateFromInputs() {
@@ -311,6 +328,8 @@ function syncStateFromInputs() {
   if (state.boosters) {
     state.boosters = {
       ...state.boosters,
+      type:
+        document.querySelector('input[name="booster-type"]:checked')?.value ?? state.boosters.type,
       engineKey: document.getElementById('booster-engine')?.value ?? state.boosters.engineKey,
       count: document.getElementById('booster-count')?.value ?? state.boosters.count,
       engineCount:
@@ -414,21 +433,27 @@ function buildStageConfig(stage, index, total) {
 
 export function buildAnalyzeConfig(draft = state) {
   const option = getPresetOption(draft.presetId);
+  const boostersActive = draft.boosters && Number(draft.boosters.count) > 0;
 
   return {
     payloadMassKg: Number(draft.payloadMassKg),
     missionTarget: option.preset?.missionTarget ?? null,
     stages: draft.stages.map((stage, index, stages) => buildStageConfig(stage, index, stages.length)),
     boosters:
-      draft.boosters && Number(draft.boosters.count) > 0
+      boostersActive
         ? {
             label: draft.boosters.nameKey ? t(draft.boosters.nameKey) : t('designer_v2.card.boosters'),
-            engineKey: draft.boosters.engineKey,
+            engineKey:
+              draft.boosters.type === BOOSTER_TYPES.SOLID ? 'srb_blob' : draft.boosters.engineKey,
             count: Number(draft.boosters.count),
-            engineCount: Number(draft.boosters.engineCount),
+            engineCount:
+              draft.boosters.type === BOOSTER_TYPES.SOLID ? 1 : Number(draft.boosters.engineCount),
             propellantMassKg: Number(draft.boosters.propellantTons) * 1000,
-            tankFraction: Number(draft.boosters.tankFraction),
-            ...(canShowNozzleToggle(getEngine(draft.boosters.engineKey))
+            ...(draft.boosters.type === BOOSTER_TYPES.LIQUID
+              ? { tankFraction: Number(draft.boosters.tankFraction) }
+              : {}),
+            ...(draft.boosters.type === BOOSTER_TYPES.LIQUID &&
+            canShowNozzleToggle(getEngine(draft.boosters.engineKey))
               ? { nozzle: draft.boosters.nozzle }
               : {}),
           }
@@ -493,17 +518,13 @@ function parseDraft() {
   });
 
   if (state.boosters) {
-    if (!engineMap.has(state.boosters.engineKey)) {
-      errors.push({
-        id: 'booster-engine',
-        message: t('designer_v2.error.engine_required'),
-      });
-    }
+    const boostersActive = Number(state.boosters.count) > 0;
+    const boosterIsLiquid = state.boosters.type === BOOSTER_TYPES.LIQUID;
 
     readNumber(
       state.boosters.count,
       {
-        min: 1,
+        min: 0,
         max: MAX_BOOSTERS,
         integer: true,
         label: t('designer_v2.field.booster_count'),
@@ -511,37 +532,53 @@ function parseDraft() {
       },
       errors
     );
-    readNumber(
-      state.boosters.engineCount,
-      {
-        min: 1,
-        max: MAX_ENGINE_COUNT,
-        integer: true,
-        label: t('designer_v2.field.engine_count'),
-        inputId: 'booster-engine-count',
-      },
-      errors
-    );
-    readNumber(
-      state.boosters.propellantTons,
-      {
-        min: PROP_TONS_RANGE.min,
-        max: PROP_TONS_RANGE.max,
-        label: t('designer_v2.field.propellant_tons'),
-        inputId: 'booster-propellant-number',
-      },
-      errors
-    );
-    readNumber(
-      state.boosters.tankFraction,
-      {
-        min: TANK_FRACTION_RANGE.min,
-        max: TANK_FRACTION_RANGE.max,
-        label: t('designer_v2.field.tank_fraction'),
-        inputId: 'booster-tank-number',
-      },
-      errors
-    );
+
+    if (boostersActive && !engineMap.has(state.boosters.engineKey)) {
+      errors.push({
+        id: 'booster-engine',
+        message: t('designer_v2.error.engine_required'),
+      });
+    }
+
+    if (boostersActive && boosterIsLiquid) {
+      readNumber(
+        state.boosters.engineCount,
+        {
+          min: 1,
+          max: MAX_ENGINE_COUNT,
+          integer: true,
+          label: t('designer_v2.field.engine_count'),
+          inputId: 'booster-engine-count',
+        },
+        errors
+      );
+    }
+
+    if (boostersActive) {
+      readNumber(
+        state.boosters.propellantTons,
+        {
+          min: PROP_TONS_RANGE.min,
+          max: PROP_TONS_RANGE.max,
+          label: t('designer_v2.field.propellant_tons'),
+          inputId: 'booster-propellant-number',
+        },
+        errors
+      );
+    }
+
+    if (boostersActive && boosterIsLiquid) {
+      readNumber(
+        state.boosters.tankFraction,
+        {
+          min: TANK_FRACTION_RANGE.min,
+          max: TANK_FRACTION_RANGE.max,
+          label: t('designer_v2.field.tank_fraction'),
+          inputId: 'booster-tank-number',
+        },
+        errors
+      );
+    }
   }
 
   if (errors.length > 0 || payloadMassKg === null) {
@@ -568,8 +605,8 @@ function parseDraft() {
   }
 }
 
-function engineOptionsMarkup(selectedKey) {
-  return state.engines
+function engineOptionsMarkup(selectedKey, engines = state.engines) {
+  return engines
     .map(
       (engine) =>
         `<option value="${engine.key}"${engine.key === selectedKey ? ' selected' : ''}>${t(
@@ -618,6 +655,10 @@ function structuralBadge(entry) {
   return `<span class="designer-v2-structural is-${entry.health}">${icon} ${label} (${ratioFmt.format(
     entry.ratio ?? 0
   )})</span>`;
+}
+
+function liquidBoosterEngines() {
+  return state.engines.filter((engine) => engine.propellant !== 'SOLID');
 }
 
 function stageMetricsMarkup(summary) {
@@ -781,12 +822,13 @@ function stageCardMarkup(stage, index, analysis) {
 }
 
 function boosterCardMarkup(analysis) {
-  if (!state.boosters) {
-    return '';
-  }
-
-  const engine = getEngine(state.boosters.engineKey);
+  const boosters = state.boosters ?? buildBoosterDraft(state.engines, { count: 0, type: BOOSTER_TYPES.SOLID });
+  const engine =
+    boosters.type === BOOSTER_TYPES.SOLID ? getEngine('srb_blob') : getEngine(boosters.engineKey);
   const boosterSummary = analysis?.boosters ?? null;
+  const boostersActive = Number(boosters.count) > 0;
+  const boosterTypeIsSolid = boosters.type === BOOSTER_TYPES.SOLID;
+  const liquidEngines = liquidBoosterEngines();
 
   return `
     <article class="designer-v2-card" aria-labelledby="booster-title">
@@ -794,17 +836,41 @@ function boosterCardMarkup(analysis) {
         <div>
           <p class="designer-v2-card-role">${t('designer_v2.card.parallel_boosters')}</p>
           <h3 id="booster-title">${
-            state.boosters.nameKey ? t(state.boosters.nameKey) : t('designer_v2.card.boosters')
+            boosters.nameKey ? t(boosters.nameKey) : t('designer_v2.card.boosters')
           }</h3>
         </div>
       </div>
 
       <div class="designer-v2-field-grid">
         <div class="form-field">
+          <label>${t('designer_v2.field.booster_type')}</label>
+          <div class="designer-v2-toggle is-wide" role="radiogroup" aria-label="${t('designer_v2.field.booster_type')}">
+            <label>
+              <input type="radio" name="booster-type" value="${BOOSTER_TYPES.LIQUID}"${
+                boosters.type === BOOSTER_TYPES.LIQUID ? ' checked' : ''
+              } />
+              <span>${t('designer_v2.booster_type.liquid')}</span>
+            </label>
+            <label>
+              <input type="radio" name="booster-type" value="${BOOSTER_TYPES.SOLID}"${
+                boosters.type === BOOSTER_TYPES.SOLID ? ' checked' : ''
+              } />
+              <span>${t('designer_v2.booster_type.solid')}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
           <label for="booster-engine">${t('designer_v2.field.engine')}</label>
-          <select id="booster-engine" name="booster-engine">${engineOptionsMarkup(
-            state.boosters.engineKey
-          )}</select>
+          ${
+            boosterTypeIsSolid
+              ? `<p class="designer-v2-note">${t('designer_v2.controls.solid_booster_note')}</p>
+                 <input id="booster-engine" type="hidden" value="srb_blob" />`
+              : `<select id="booster-engine" name="booster-engine">${engineOptionsMarkup(
+                  boosters.engineKey,
+                  liquidEngines
+                )}</select>`
+          }
           <p id="booster-engine-error" class="field-error" aria-live="polite"></p>
         </div>
 
@@ -814,15 +880,15 @@ function boosterCardMarkup(analysis) {
             id="booster-count"
             type="number"
             inputmode="numeric"
-            min="1"
+            min="0"
             max="${MAX_BOOSTERS}"
             step="1"
-            value="${state.boosters.count}"
+            value="${boosters.count}"
           />
           <p id="booster-count-error" class="field-error" aria-live="polite"></p>
         </div>
 
-        <div class="form-field">
+        <div class="form-field ${boostersActive && !boosterTypeIsSolid ? '' : 'designer-v2-hidden'}">
           <label for="booster-engine-count">${t('designer_v2.field.engine_count')}</label>
           <input
             id="booster-engine-count"
@@ -831,17 +897,17 @@ function boosterCardMarkup(analysis) {
             min="1"
             max="${MAX_ENGINE_COUNT}"
             step="1"
-            value="${state.boosters.engineCount}"
+            value="${boosters.engineCount}"
           />
           <p id="booster-engine-count-error" class="field-error" aria-live="polite"></p>
         </div>
 
-        <div class="form-field">
+        <div class="form-field ${boostersActive && !boosterTypeIsSolid ? '' : 'designer-v2-hidden'}">
           <label>${t('designer_v2.field.nozzle')}</label>
-          ${nozzleMarkup({ groupName: 'booster-nozzle', engine, value: state.boosters.nozzle })}
+          ${nozzleMarkup({ groupName: 'booster-nozzle', engine, value: boosters.nozzle })}
         </div>
 
-        <div class="form-field">
+        <div class="form-field ${boostersActive ? '' : 'designer-v2-hidden'}">
           <label for="booster-propellant-number">${t('designer_v2.field.propellant_tons')}</label>
           <div class="designer-v2-range-row">
             <input
@@ -850,7 +916,7 @@ function boosterCardMarkup(analysis) {
               min="${PROP_TONS_RANGE.min}"
               max="${PROP_TONS_RANGE.max}"
               step="${PROP_TONS_RANGE.step}"
-              value="${state.boosters.propellantTons}"
+              value="${boosters.propellantTons}"
             />
             <input
               id="booster-propellant-number"
@@ -859,13 +925,13 @@ function boosterCardMarkup(analysis) {
               min="${PROP_TONS_RANGE.min}"
               max="${PROP_TONS_RANGE.max}"
               step="${PROP_TONS_RANGE.step}"
-              value="${state.boosters.propellantTons}"
+              value="${boosters.propellantTons}"
             />
           </div>
           <p id="booster-propellant-number-error" class="field-error" aria-live="polite"></p>
         </div>
 
-        <div class="form-field">
+        <div class="form-field ${boostersActive && !boosterTypeIsSolid ? '' : 'designer-v2-hidden'}">
           <label for="booster-tank-number">${t('designer_v2.field.tank_fraction')}</label>
           <div class="designer-v2-range-row">
             <input
@@ -874,7 +940,7 @@ function boosterCardMarkup(analysis) {
               min="${TANK_FRACTION_RANGE.min}"
               max="${TANK_FRACTION_RANGE.max}"
               step="${TANK_FRACTION_RANGE.step}"
-              value="${state.boosters.tankFraction}"
+              value="${boosters.tankFraction}"
             />
             <input
               id="booster-tank-number"
@@ -883,12 +949,18 @@ function boosterCardMarkup(analysis) {
               min="${TANK_FRACTION_RANGE.min}"
               max="${TANK_FRACTION_RANGE.max}"
               step="${TANK_FRACTION_RANGE.step}"
-              value="${state.boosters.tankFraction}"
+              value="${boosters.tankFraction}"
             />
           </div>
           <p id="booster-tank-number-error" class="field-error" aria-live="polite"></p>
         </div>
       </div>
+
+      ${
+        boostersActive
+          ? ''
+          : `<p class="designer-v2-note">${t('designer_v2.card.boosters_inactive')}</p>`
+      }
 
       <div id="booster-metrics" class="designer-v2-metrics" aria-live="polite">
         ${stageMetricsMarkup(boosterSummary)}
@@ -902,11 +974,9 @@ function renderCards(result = null) {
   const boosterSlot = document.getElementById('booster-slot');
   const addStage = document.getElementById('add-stage');
   const removeStage = document.getElementById('remove-stage');
-  const addBooster = document.getElementById('add-booster');
-  const removeBooster = document.getElementById('remove-booster');
   const presetSelect = document.getElementById('preset-select');
 
-  if (!stageList || !boosterSlot || !addStage || !removeStage || !addBooster || !removeBooster || !presetSelect) {
+  if (!stageList || !boosterSlot || !addStage || !removeStage || !presetSelect) {
     return;
   }
 
@@ -921,8 +991,6 @@ function renderCards(result = null) {
   boosterSlot.innerHTML = boosterCardMarkup(result);
   addStage.disabled = state.stages.length >= MAX_STAGES;
   removeStage.disabled = state.stages.length <= MIN_STAGES;
-  addBooster.disabled = Number(state.boosters?.count ?? 0) >= MAX_BOOSTERS;
-  removeBooster.disabled = !state.boosters;
 }
 
 function renderMetricContainers(result = null) {
@@ -1010,12 +1078,22 @@ function renderSummary(result, blocked, errorMessage = '') {
   const totalDv = document.getElementById('total-dv');
   const verdictPill = document.getElementById('verdict-pill');
   const missionTarget = document.getElementById('mission-target');
+  const boosterPhase = document.getElementById('booster-phase');
   const warningsList = document.getElementById('warnings-list');
   const summaryStatus = document.getElementById('summary-status');
   const analyzeButton = document.getElementById('analyze-button');
   const errorEl = document.getElementById('designer-v2-error');
 
-  if (!totalDv || !verdictPill || !missionTarget || !warningsList || !summaryStatus || !analyzeButton || !errorEl) {
+  if (
+    !totalDv ||
+    !verdictPill ||
+    !missionTarget ||
+    !boosterPhase ||
+    !warningsList ||
+    !summaryStatus ||
+    !analyzeButton ||
+    !errorEl
+  ) {
     return;
   }
 
@@ -1027,6 +1105,7 @@ function renderSummary(result, blocked, errorMessage = '') {
     verdictPill.textContent = '—';
     verdictPill.className = 'designer-v2-verdict-pill';
     missionTarget.textContent = '—';
+    boosterPhase.textContent = '—';
     warningsList.innerHTML = `<li>${t('designer_v2.summary.awaiting')}</li>`;
     summaryStatus.textContent = errorMessage || t('designer_v2.summary.invalid');
     analyzeButton.disabled = true;
@@ -1059,6 +1138,13 @@ function renderSummary(result, blocked, errorMessage = '') {
   } else {
     missionTarget.textContent = t('designer_v2.summary.no_target');
   }
+
+  boosterPhase.textContent = result.boosters
+    ? formatMessage('designer_v2.summary.booster_jettison', {
+        dv: oneDecimalFmt.format(result.boosters.dv_ms / 1000),
+        propellant: oneDecimalFmt.format(result.boosters.stage1_remaining_propellant_kg / 1000),
+      })
+    : t('designer_v2.summary.no_booster_phase');
 
   warningsList.innerHTML =
     result.total.warnings.length > 0
@@ -1123,9 +1209,30 @@ function resetBoostersForEngine(engineKey) {
 
   state.boosters = {
     ...state.boosters,
+    type: boosterTypeForEngine(engine),
     engineKey,
     tankFraction: editableNumber(defaultTankFractionForPropellant(engine.propellant), 2),
     nozzle: canShowNozzleToggle(engine) ? 'sl' : 'auto',
+  };
+}
+
+function resetBoosterType(type) {
+  if (!state.boosters) {
+    state.boosters = buildBoosterDraft(state.engines, { count: 0, type });
+    return;
+  }
+
+  const engine =
+    type === BOOSTER_TYPES.SOLID ? getEngine('srb_blob') : defaultLiquidBoosterEngine(state.engines);
+
+  state.boosters = {
+    ...state.boosters,
+    type,
+    engineKey: engine?.key ?? state.boosters.engineKey,
+    engineCount: type === BOOSTER_TYPES.SOLID ? '1' : state.boosters.engineCount,
+    nozzle: type === BOOSTER_TYPES.SOLID ? 'auto' : defaultNozzle(engine, 0),
+    tankFraction: editableNumber(defaultTankFractionForPropellant(engine?.propellant), 2),
+    propellantTons: editableNumber((engine?.fixed_propellant_kg ?? 250000) / 1000, 1),
   };
 }
 
@@ -1148,37 +1255,6 @@ function removeStage() {
   }
 
   state.stages.pop();
-  state.presetId = 'custom';
-  renderCards();
-  updateOutputs();
-}
-
-function addBooster() {
-  syncStateFromInputs();
-
-  if (!state.boosters) {
-    state.boosters = buildBoosterDraft(state.engines, { count: 1 });
-  } else if (Number(state.boosters.count) < MAX_BOOSTERS) {
-    state.boosters = {
-      ...state.boosters,
-      count: String(Number(state.boosters.count) + 1),
-    };
-  }
-
-  state.presetId = 'custom';
-  renderCards();
-  updateOutputs();
-}
-
-function removeBooster() {
-  syncStateFromInputs();
-
-  if (!state.boosters) {
-    return;
-  }
-
-  const nextCount = Number(state.boosters.count) - 1;
-  state.boosters = nextCount > 0 ? { ...state.boosters, count: String(nextCount) } : null;
   state.presetId = 'custom';
   renderCards();
   updateOutputs();
@@ -1223,6 +1299,13 @@ function handleFormInput(event) {
   if (target.id === 'booster-engine') {
     syncStateFromInputs();
     resetBoostersForEngine(target.value);
+    state.presetId = 'custom';
+    renderCards();
+  }
+
+  if (target.getAttribute('name') === 'booster-type') {
+    syncStateFromInputs();
+    resetBoosterType(target.value);
     state.presetId = 'custom';
     renderCards();
   }
@@ -1342,8 +1425,6 @@ async function init() {
 
   const addStageButton = document.getElementById('add-stage');
   const removeStageButton = document.getElementById('remove-stage');
-  const addBoosterButton = document.getElementById('add-booster');
-  const removeBoosterButton = document.getElementById('remove-booster');
   const presetSelect = document.getElementById('preset-select');
   const form = document.getElementById('designer-v2-form');
   const analyzeButton = document.getElementById('analyze-button');
@@ -1351,8 +1432,6 @@ async function init() {
   if (
     !addStageButton ||
     !removeStageButton ||
-    !addBoosterButton ||
-    !removeBoosterButton ||
     !presetSelect ||
     !form ||
     !analyzeButton
@@ -1378,8 +1457,6 @@ async function init() {
 
   addStageButton.addEventListener('click', addStage);
   removeStageButton.addEventListener('click', removeStage);
-  addBoosterButton.addEventListener('click', addBooster);
-  removeBoosterButton.addEventListener('click', removeBooster);
   presetSelect.addEventListener('change', handlePresetChange);
   analyzeButton.addEventListener('click', handleAnalyzeClick);
   form.addEventListener('input', handleFormInput);

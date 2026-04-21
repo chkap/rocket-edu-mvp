@@ -148,6 +148,10 @@
   gap: 0.4rem;
 }
 
+.designer-v2-toggle.is-wide label {
+  min-width: 7rem;
+}
+
 .designer-v2-toggle label {
   flex: 1 1 auto;
 }
@@ -178,6 +182,10 @@
 .designer-v2-note {
   margin-top: 0.9rem;
   color: var(--muted);
+}
+
+.designer-v2-hidden {
+  display: none !important;
 }
 
 .designer-v2-metrics {
