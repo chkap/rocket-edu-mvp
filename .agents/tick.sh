@@ -65,8 +65,13 @@ TASK_JSON="$(gh issue list \
 INBOX_COUNT="$(echo "$TASK_JSON" | jq 'length')"
 
 if [[ "$INBOX_COUNT" -eq 0 && -z "$HUMAN" ]]; then
-  echo "[$ROLE] no pending tasks, no human input. exiting clean."
-  exit 0
+  if [[ "$ROLE" == "lead" ]]; then
+    # Lead always runs as watchdog — supervises project even with empty inbox
+    HUMAN="WATCHDOG TICK: no new tasks were assigned to you. Run your watchdog checklist (see AGENTS.md §Watchdog duties): scan all open issues, detect stalls, missing labels, untriaged PRs, dead deps, or contradictions; nudge or re-route as needed; if everything is healthy, post one short status line and exit."
+  else
+    echo "[$ROLE] no pending tasks, no human input. exiting clean."
+    exit 0
+  fi
 fi
 
 # Compose inbox section (use jq map+join to avoid shell quoting issues)
