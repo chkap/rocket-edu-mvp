@@ -75,7 +75,20 @@ TASK_JSON="$(gh issue list \
 
 INBOX_COUNT="$(echo "$TASK_JSON" | jq 'length')"
 
-if [[ "$INBOX_COUNT" -eq 0 && -z "$HUMAN" ]]; then
+# Verifier also reviews PRs labeled needs-verification
+PR_JSON="[]"
+PR_COUNT=0
+if [[ "$ROLE" == "verifier" ]]; then
+  PR_JSON="$(gh pr list \
+    --label "needs-verification" --state open \
+    --json number,title,body,headRefName,labels --limit 50 \
+    | jq 'sort_by(.number)')"
+  PR_COUNT="$(echo "$PR_JSON" | jq 'length')"
+fi
+
+TOTAL=$((INBOX_COUNT + PR_COUNT))
+
+if [[ "$TOTAL" -eq 0 && -z "$HUMAN" ]]; then
   if [[ "$ROLE" == "lead" ]]; then
     # Lead always runs as watchdog — supervises project even with empty inbox
     HUMAN="WATCHDOG TICK: no new tasks were assigned to you. Run your watchdog checklist (see AGENTS.md §Watchdog duties): scan all open issues, detect stalls, missing labels, untriaged PRs, dead deps, or contradictions; nudge or re-route as needed; if everything is healthy, post one short status line and exit."
@@ -89,7 +102,15 @@ fi
 if [[ "$INBOX_COUNT" -gt 0 ]]; then
   INBOX="$(echo "$TASK_JSON" | jq -r 'map("### Issue #\(.number): \(.title)\nLabels: " + ([.labels[].name] | join(", ")) + "\n\n" + .body + "\n") | join("\n---\n")')"
 else
-  INBOX="(empty inbox)"
+  INBOX="(no pending issues)"
+fi
+
+if [[ "$PR_COUNT" -gt 0 ]]; then
+  PR_SECTION="$(echo "$PR_JSON" | jq -r 'map("### PR #\(.number): \(.title)\nBranch: \(.headRefName)\nLabels: " + ([.labels[].name] | join(", ")) + "\n\n" + (.body // "(no description)") + "\n") | join("\n---\n")')"
+  INBOX="$INBOX
+
+## PRs awaiting verification
+$PR_SECTION"
 fi
 
 PROMPT="## Inbox (live, fetched at tick time)
