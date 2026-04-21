@@ -201,6 +201,7 @@ describe('t and formatMessage', () => {
     });
 
     expect(t('nav.compare')).toBe('火箭对比');
+    expect(t('designer_v2.structural.fixed')).toBe('固定质量模型');
     expect(formatMessage('designer.stage.count.other', { count: 3 })).toBe('3 级');
   });
 

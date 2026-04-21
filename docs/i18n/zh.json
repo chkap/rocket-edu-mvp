@@ -212,6 +212,7 @@
   "designer_v2.metric.structural": "结构指数",
   "designer_v2.structural.realistic": "合理",
   "designer_v2.structural.optimistic": "偏乐观",
+  "designer_v2.structural.fixed": "固定质量模型",
   "designer_v2.structural.unphysical": "阻止分析",
   "designer_v2.summary.title": "粘性任务摘要",
   "designer_v2.summary.total_dv": "总 Δv",
