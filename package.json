@@ -1,0 +1,27 @@
+{
+  "name": "rocket-edu-mvp",
+  "version": "1.0.0",
+  "description": "A small educational website that teaches the **Tsiolkovsky rocket equation** to high-school students and curious learners — built end-to-end by a crew of four AI agents that coordinate exclusively through GitHub issues and PRs.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chkap/rocket-edu-mvp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/chkap/rocket-edu-mvp/issues"
+  },
+  "homepage": "https://github.com/chkap/rocket-edu-mvp#readme",
+  "devDependencies": {
+    "vitest": "^4.1.4"
+  }
+}
