@@ -1,0 +1,4 @@
+GOAL #22 reached at 2026-04-21T11:16Z.
+Summary: Multi-stage rocket designer + real-mission compare page + CI/a11y pipeline all shipped and verified. Anti-hallucination acceptance met (every aerospace constant cited to Advisory issues #23/#24). CI green on main.
+PRs merged: #29 (core lib), #30 (designer), #31 (compare), #32 (CI).
+To resume: rm .agents/STOPPED
