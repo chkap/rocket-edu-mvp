@@ -22,6 +22,8 @@ const BOOSTER_TYPES = {
   LIQUID: 'liquid',
   SOLID: 'solid',
 };
+const SHARE_FRAGMENT_KEY = 'd';
+const SHARE_VERSION = 1;
 
 export const MISSION_MARKERS = [
   { id: 'leo', labelKey: 'designer_v2.target.leo', altitudeKm: 200, badge: 'L' },
@@ -133,6 +135,248 @@ const state = {
   stages: [],
   boosters: null,
 };
+
+function encodeBase64(raw) {
+  if (typeof btoa === 'function') {
+    return btoa(raw);
+  }
+
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(raw, 'utf8').toString('base64');
+  }
+
+  throw new Error('Base64 encoding is unavailable.');
+}
+
+function decodeBase64(raw) {
+  if (typeof atob === 'function') {
+    return atob(raw);
+  }
+
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(raw, 'base64').toString('utf8');
+  }
+
+  throw new Error('Base64 decoding is unavailable.');
+}
+
+function encodeBase64Url(raw) {
+  return encodeBase64(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function decodeBase64Url(raw) {
+  const normalized = String(raw).replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+  return decodeBase64(padded);
+}
+
+function stringifyDraftValue(value, fallback) {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return fallback;
+}
+
+function setShareStatus(message = '') {
+  const status = document.getElementById('share-status');
+  if (status) {
+    status.textContent = message;
+  }
+}
+
+function cloneStageForShare(stage = {}) {
+  return {
+    engineKey: stage.engineKey,
+    engineCount: stage.engineCount,
+    nozzle: stage.nozzle,
+    propellantTons: stage.propellantTons,
+    tankFraction: stage.tankFraction,
+    nameKey: stage.nameKey ?? null,
+    fairingMassKg: typeof stage.fairingMassKg === 'number' ? stage.fairingMassKg : null,
+  };
+}
+
+function cloneBoostersForShare(boosters = null) {
+  if (!boosters) {
+    return null;
+  }
+
+  return {
+    type: boosters.type,
+    engineKey: boosters.engineKey,
+    count: boosters.count,
+    engineCount: boosters.engineCount,
+    nozzle: boosters.nozzle,
+    propellantTons: boosters.propellantTons,
+    tankFraction: boosters.tankFraction,
+    nameKey: boosters.nameKey ?? null,
+  };
+}
+
+export function snapshotShareDraft(draft = state) {
+  return {
+    presetId: draft.presetId,
+    targetOrbitAltitudeKm: draft.targetOrbitAltitudeKm,
+    payloadMassKg: draft.payloadMassKg,
+    stages: draft.stages.map((stage) => cloneStageForShare(stage)),
+    boosters: cloneBoostersForShare(draft.boosters),
+  };
+}
+
+function sanitizeSharedDraft(rawDraft, engines = state.engines) {
+  if (!rawDraft || typeof rawDraft !== 'object' || !Array.isArray(rawDraft.stages)) {
+    return null;
+  }
+
+  if (rawDraft.stages.length < MIN_STAGES || rawDraft.stages.length > MAX_STAGES) {
+    return null;
+  }
+
+  const engineMap = new Map(engines.map((engine) => [engine.key, engine]));
+  const stages = rawDraft.stages.map((stage, index) => {
+    if (!stage || typeof stage !== 'object' || !engineMap.has(stage.engineKey)) {
+      return null;
+    }
+
+    const fallback = buildStageDraft(engines, {}, index, rawDraft.stages.length);
+    const engine = engineMap.get(stage.engineKey);
+    return {
+      ...fallback,
+      engineKey: stage.engineKey,
+      engineCount: stringifyDraftValue(stage.engineCount, fallback.engineCount),
+      nozzle:
+        stage.nozzle === 'sl' || stage.nozzle === 'vac' || stage.nozzle === 'auto'
+          ? stage.nozzle
+          : defaultNozzle(engine, index),
+      propellantTons: stringifyDraftValue(stage.propellantTons, fallback.propellantTons),
+      tankFraction: stringifyDraftValue(stage.tankFraction, fallback.tankFraction),
+      nameKey: stage.nameKey ?? fallback.nameKey ?? null,
+      fairingMassKg:
+        typeof stage.fairingMassKg === 'number' || stage.fairingMassKg === null
+          ? stage.fairingMassKg
+          : fallback.fairingMassKg,
+    };
+  });
+
+  if (stages.some((stage) => stage === null)) {
+    return null;
+  }
+
+  const fallbackBoosters = buildBoosterDraft(engines, { count: 0, type: BOOSTER_TYPES.SOLID });
+  let boosters = fallbackBoosters;
+
+  if (rawDraft.boosters !== null && rawDraft.boosters !== undefined) {
+    const rawBoosters = rawDraft.boosters;
+    if (
+      !rawBoosters ||
+      typeof rawBoosters !== 'object' ||
+      !Object.values(BOOSTER_TYPES).includes(rawBoosters.type)
+    ) {
+      return null;
+    }
+
+    const boosterEngineKey =
+      rawBoosters.type === BOOSTER_TYPES.SOLID ? 'srb_blob' : rawBoosters.engineKey;
+    if (!engineMap.has(boosterEngineKey)) {
+      return null;
+    }
+
+    const boosterEngine = engineMap.get(boosterEngineKey);
+    boosters = {
+      ...fallbackBoosters,
+      type: rawBoosters.type,
+      engineKey: rawBoosters.type === BOOSTER_TYPES.SOLID ? 'srb_blob' : rawBoosters.engineKey,
+      count: stringifyDraftValue(rawBoosters.count, fallbackBoosters.count),
+      engineCount:
+        rawBoosters.type === BOOSTER_TYPES.SOLID
+          ? '1'
+          : stringifyDraftValue(rawBoosters.engineCount, fallbackBoosters.engineCount),
+      nozzle:
+        rawBoosters.nozzle === 'sl' || rawBoosters.nozzle === 'vac' || rawBoosters.nozzle === 'auto'
+          ? rawBoosters.nozzle
+          : defaultNozzle(boosterEngine, 0),
+      propellantTons: stringifyDraftValue(rawBoosters.propellantTons, fallbackBoosters.propellantTons),
+      tankFraction: stringifyDraftValue(rawBoosters.tankFraction, fallbackBoosters.tankFraction),
+      nameKey: rawBoosters.nameKey ?? fallbackBoosters.nameKey ?? null,
+    };
+  }
+
+  const presetId = getPresetOption(rawDraft.presetId)?.id ?? 'custom';
+  return {
+    presetId,
+    targetOrbitAltitudeKm: stringifyDraftValue(
+      rawDraft.targetOrbitAltitudeKm,
+      editableNumber(BASELINE_ORBIT_ALTITUDE_KM, 0)
+    ),
+    payloadMassKg: stringifyDraftValue(rawDraft.payloadMassKg, '1000'),
+    stages,
+    boosters,
+  };
+}
+
+export function encodeShareDraft(draft = state) {
+  return encodeBase64Url(
+    JSON.stringify({
+      v: SHARE_VERSION,
+      draft: snapshotShareDraft(draft),
+    })
+  );
+}
+
+export function decodeShareDraft(encodedDraft, engines = state.engines) {
+  try {
+    const parsed = JSON.parse(decodeBase64Url(encodedDraft));
+    if (parsed?.v !== SHARE_VERSION) {
+      return null;
+    }
+
+    return sanitizeSharedDraft(parsed.draft, engines);
+  } catch {
+    return null;
+  }
+}
+
+export function buildShareUrl(draft = state, href = window.location.href) {
+  const url = new URL(href);
+  const params = new URLSearchParams(url.hash.replace(/^#/, ''));
+  params.set(SHARE_FRAGMENT_KEY, encodeShareDraft(draft));
+  url.hash = params.toString();
+  return url.toString();
+}
+
+export function restoreSharedDraftFromHash(hash = window.location.hash, engines = state.engines) {
+  const params = new URLSearchParams(String(hash).replace(/^#/, ''));
+  const encodedDraft = params.get(SHARE_FRAGMENT_KEY);
+  if (!encodedDraft) {
+    return { draft: null, status: 'missing' };
+  }
+
+  const draft = decodeShareDraft(encodedDraft, engines);
+  return draft ? { draft, status: 'restored' } : { draft: null, status: 'invalid' };
+}
+
+function syncShareFragment() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const shareUrl = buildShareUrl(state, window.location.href);
+  if (shareUrl === window.location.href) {
+    return;
+  }
+
+  if (window.history && typeof window.history.replaceState === 'function') {
+    window.history.replaceState(null, '', shareUrl);
+    return;
+  }
+
+  window.location.hash = new URL(shareUrl).hash;
+}
 
 function editableNumber(value, digits = 2) {
   if (!Number.isFinite(value)) {
@@ -1569,6 +1813,7 @@ function renderValidationErrors(errors) {
 function updateOutputs() {
   clearErrors();
   syncStateFromInputs();
+  syncShareFragment();
 
   const parsed = parseDraft();
 
@@ -1765,6 +2010,22 @@ function handleAnalyzeClick() {
   updateOutputs();
 }
 
+async function handleCopyShareLink() {
+  const shareUrl = buildShareUrl(state, window.location.href);
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareStatus(t('designer_v2.controls.share_copied'));
+      return;
+    } catch {
+      // Fall through to visible fallback copy guidance below.
+    }
+  }
+
+  setShareStatus(formatMessage('designer_v2.controls.share_copy_fallback', { url: shareUrl }));
+}
+
 function enableDragAndDrop() {
   const stageList = document.getElementById('stage-list');
   if (!stageList) {
@@ -1873,6 +2134,7 @@ async function init() {
   const missionQuickPicks = document.getElementById('mission-quick-picks');
   const form = document.getElementById('designer-v2-form');
   const analyzeButton = document.getElementById('analyze-button');
+  const copyShareButton = document.getElementById('copy-share-link');
 
   if (
     !addStageButton ||
@@ -1881,7 +2143,8 @@ async function init() {
     !presetQuickLoad ||
     !missionQuickPicks ||
     !form ||
-    !analyzeButton
+    !analyzeButton ||
+    !copyShareButton
   ) {
     return;
   }
@@ -1897,11 +2160,22 @@ async function init() {
     return;
   }
 
-  applyDraft(loadDraftFromPreset('custom', state.engines));
+  const restoredShareDraft = restoreSharedDraftFromHash(window.location.hash, state.engines);
+  if (restoredShareDraft.draft) {
+    applyDraft(restoredShareDraft.draft);
+  } else {
+    applyDraft(loadDraftFromPreset('custom', state.engines));
+  }
   renderGlossary();
   renderCards();
   updateOutputs();
   enableDragAndDrop();
+
+  if (restoredShareDraft.status === 'restored') {
+    setShareStatus(t('designer_v2.controls.share_restored'));
+  } else if (restoredShareDraft.status === 'invalid') {
+    setShareStatus(t('designer_v2.controls.share_invalid'));
+  }
 
   addStageButton.addEventListener('click', addStage);
   removeStageButton.addEventListener('click', removeStage);
@@ -1909,6 +2183,9 @@ async function init() {
   presetQuickLoad.addEventListener('click', handlePresetQuickLoadClick);
   missionQuickPicks.addEventListener('click', handleMissionQuickPickClick);
   analyzeButton.addEventListener('click', handleAnalyzeClick);
+  copyShareButton.addEventListener('click', () => {
+    void handleCopyShareLink();
+  });
   form.addEventListener('input', handleFormInput);
 }
 
