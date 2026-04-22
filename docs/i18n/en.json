@@ -345,5 +345,15 @@
   "designer_v2.target.tli": "TLI (12.4 km/s)",
   "designer_v2.engine_card.sea_level_na": "Sea-level data not applicable",
   "site.title": "Rocket Equation",
-  "nav.glossary": "Flight glossary"
+  "nav.glossary": "Flight glossary",
+  "glossary.title": "Flight Glossary",
+  "glossary.subtitle": "Quick reference for all the terms used across the rocket design tools.",
+  "glossary.search_placeholder": "Filter terms…",
+  "glossary.col.term": "Term",
+  "glossary.col.definition": "Definition",
+  "glossary.col.category": "Category",
+  "glossary.category.equation": "Equation",
+  "glossary.category.performance": "Performance",
+  "glossary.category.stage": "Stage",
+  "glossary.category.orbit": "Orbit"
 }

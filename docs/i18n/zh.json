@@ -345,5 +345,15 @@
   "designer_v2.target.tli": "TLI（12.4 km/s）",
   "designer_v2.engine_card.sea_level_na": "海平面数据不适用",
   "site.title": "火箭方程",
-  "nav.glossary": "飞行术语表"
+  "nav.glossary": "飞行术语表",
+  "glossary.title": "飞行术语表",
+  "glossary.subtitle": "火箭设计工具中使用的所有术语的快速参考。",
+  "glossary.search_placeholder": "筛选术语…",
+  "glossary.col.term": "术语",
+  "glossary.col.definition": "定义",
+  "glossary.col.category": "类别",
+  "glossary.category.equation": "公式",
+  "glossary.category.performance": "性能",
+  "glossary.category.stage": "级段",
+  "glossary.category.orbit": "轨道"
 }
