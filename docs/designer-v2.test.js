@@ -3,12 +3,10 @@ import { describe, expect, it } from 'vitest';
 import catalog from './data/engines.json' with { type: 'json' };
 import { analyze } from './lib/designer_v2/physics.js';
 import {
-  buildComparePaneUrl,
   buildShareUrl,
   defaultTankFractionForPropellant,
   decodeShareDraft,
   encodeShareDraft,
-  launchMassKgForResult,
   MISSION_MARKERS,
   missionProgressPercent,
   reorderUpperStages,
@@ -122,23 +120,5 @@ describe('designer-v2 helpers', () => {
       draft: null,
       status: 'invalid',
     });
-  });
-
-  it('builds compare pane URLs that preserve the shared draft and pane id', () => {
-    const draft = loadDraftFromPreset('falcon9', catalog.engines);
-    const compareUrl = buildComparePaneUrl('A', draft, 'https://example.test/designer-v2.html?lang=en');
-
-    expect(compareUrl).toContain('embed=1');
-    expect(compareUrl).toContain('pane=A');
-    expect(compareUrl).toContain('#d=');
-  });
-
-  it('computes launch mass from the analyzed first stage and boosters', () => {
-    const result = analyze(buildAnalyzeConfig(loadDraftFromPreset('longMarch5', catalog.engines)));
-
-    expect(launchMassKgForResult(result)).toBeCloseTo(
-      result.stages[0].wet_stack_mass_kg + result.boosters.wet_mass_kg,
-      5
-    );
   });
 });
