@@ -359,6 +359,67 @@
   gap: 1rem;
 }
 
+.designer-v2-silhouette-panel {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  background: var(--surface-muted);
+}
+
+.designer-v2-silhouette-copy h2,
+.designer-v2-silhouette-copy p {
+  margin-top: 0;
+}
+
+.designer-v2-silhouette {
+  display: grid;
+  justify-items: center;
+}
+
+.designer-v2-silhouette svg {
+  width: min(100%, 17rem);
+  height: auto;
+  overflow: visible;
+}
+
+.designer-v2-silhouette-stage {
+  fill: color-mix(in srgb, var(--primary) 72%, white 28%);
+}
+
+.designer-v2-silhouette-stage.is-upper {
+  fill: color-mix(in srgb, var(--accent-text) 55%, white 45%);
+}
+
+.designer-v2-silhouette-booster {
+  fill: color-mix(in srgb, #f97316 70%, white 30%);
+}
+
+.designer-v2-silhouette-nose,
+.designer-v2-silhouette-fairing {
+  fill: var(--surface-strong);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.designer-v2-silhouette-label {
+  font-size: 12px;
+  fill: var(--muted);
+  font-weight: 600;
+}
+
+.designer-v2-silhouette-outline,
+.designer-v2-silhouette-separator {
+  stroke: rgba(15, 23, 42, 0.18);
+  stroke-width: 1.5;
+}
+
+.designer-v2-silhouette-separator {
+  stroke-dasharray: 4 3;
+}
+
 @media (min-width: 1080px) {
   .designer-v2-summary-panel {
     position: sticky;
@@ -632,6 +693,10 @@
 }
 
 @media (max-width: 720px) {
+  .designer-v2-silhouette-panel {
+    display: none;
+  }
+
   .designer-v2-toolbar-actions,
   .designer-v2-preset-field {
     width: 100%;
