@@ -211,6 +211,16 @@ export function gravityDragLoss(twrLiftoff) {
   return Math.min(2200, Math.max(1500, lossMs));
 }
 
+export function upperStageGravityLoss(twrIgnition) {
+  assertPositiveNumber('twrIgnition', twrIgnition);
+  // Didactic upper-stage vacuum loss fit from issue #48 advisory comment:
+  // https://github.com/chkap/rocket-edu-mvp/issues/48#issuecomment-4293420598
+  // It keeps upper stages in the 50-150 m/s band and scales loss down as
+  // ignition TWR rises, instead of reusing the large first-stage atmospheric term.
+  const lossMs = 30 + 45 / twrIgnition;
+  return Math.min(150, Math.max(50, lossMs));
+}
+
 export function verdict(dv_kms) {
   assertNonNegativeNumber('dv_kms', dv_kms);
 
@@ -437,6 +447,8 @@ export function analyze(config) {
       dv_ms: rocketEquation(stage.isp_eff_s, wetMassKg, dryMassKg),
       twr_ignition: ignitionTwr,
       twr_burnout: burnoutTwr,
+      gravity_drag_loss_ms:
+        index > 0 ? upperStageGravityLoss(Math.max(ignitionTwr, Number.EPSILON)) : 0,
       warnings: stageWarnings,
     };
   });
@@ -465,6 +477,14 @@ export function analyze(config) {
       gravity_drag_loss_ms: gravityLossMs,
     };
   }
+
+  analyzedStages.forEach((stage, index) => {
+    if (index === 0) {
+      return;
+    }
+
+    stage.dv_ms = Math.max(stage.dv_ms - stage.gravity_drag_loss_ms, 0);
+  });
 
   const structural = buildStructuralSummary(analyzedStages, boosterSummary);
   const totalDvMs = Math.max(

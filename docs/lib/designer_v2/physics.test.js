@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyze, dryMass, effectiveIsp, g0, gravityDragLoss, verdict } from './physics.js';
+import {
+  analyze,
+  dryMass,
+  effectiveIsp,
+  g0,
+  gravityDragLoss,
+  upperStageGravityLoss,
+  verdict,
+} from './physics.js';
 import { falcon9, longMarch5, saturnV, slsBlock1 } from './presets.js';
 
 describe('dryMass', () => {
@@ -47,6 +55,18 @@ describe('gravityDragLoss', () => {
     expect(medium).toBeGreaterThan(high);
     expect(low - medium).toBeLessThan(20);
     expect(medium - high).toBeLessThan(20);
+  });
+});
+
+describe('upperStageGravityLoss', () => {
+  it('follows the cited vacuum-loss fit within the target band', () => {
+    expect(upperStageGravityLoss(0.3)).toBe(150);
+    expect(upperStageGravityLoss(0.4)).toBeCloseTo(142.5, 5);
+    expect(upperStageGravityLoss(0.5)).toBe(120);
+    expect(upperStageGravityLoss(0.8)).toBeCloseTo(86, 0);
+    expect(upperStageGravityLoss(1.2)).toBeCloseTo(67.5, 5);
+    expect(upperStageGravityLoss(2)).toBeCloseTo(52.5, 5);
+    expect(upperStageGravityLoss(3)).toBe(50);
   });
 });
 
@@ -212,6 +232,76 @@ describe('analyze edge cases', () => {
     });
 
     expect(result.stages[1].warnings.join(' ')).toMatch(/sea-level nozzle selected on an upper stage/i);
+  });
+
+  it('applies a smaller stage-aware vacuum loss to upper stages', () => {
+    const lowerUpperStageTwr = analyze({
+      payloadMassKg: 0,
+      stages: [
+        {
+          label: 'Stage 1',
+          engineKey: 'merlin_1d',
+          engineCount: 1,
+          propellantMassKg: 100000,
+          tankFraction: 0.06,
+        },
+        {
+          label: 'Stage 2',
+          engineKey: 'rl10b2',
+          engineCount: 1,
+          propellantMassKg: 28600,
+          tankFraction: 0.12,
+          fairingMassKg: 1500,
+        },
+      ],
+    });
+    const higherUpperStageTwr = analyze({
+      payloadMassKg: 0,
+      stages: [
+        {
+          label: 'Stage 1',
+          engineKey: 'merlin_1d',
+          engineCount: 1,
+          propellantMassKg: 100000,
+          tankFraction: 0.06,
+        },
+        {
+          label: 'Stage 2',
+          engineKey: 'rl10b2',
+          engineCount: 2,
+          propellantMassKg: 28600,
+          tankFraction: 0.12,
+          fairingMassKg: 1500,
+        },
+      ],
+    });
+
+    expect(lowerUpperStageTwr.stages[0].gravity_drag_loss_ms).toBeGreaterThan(1500);
+    expect(lowerUpperStageTwr.stages[1].gravity_drag_loss_ms).toBeGreaterThanOrEqual(50);
+    expect(lowerUpperStageTwr.stages[1].gravity_drag_loss_ms).toBeLessThanOrEqual(150);
+    expect(lowerUpperStageTwr.stages[1].gravity_drag_loss_ms).toBeLessThan(
+      lowerUpperStageTwr.stages[0].gravity_drag_loss_ms
+    );
+    expect(higherUpperStageTwr.stages[1].gravity_drag_loss_ms).toBeLessThan(
+      lowerUpperStageTwr.stages[1].gravity_drag_loss_ms
+    );
+  });
+
+  it('keeps single-stage rockets on the atmospheric first-stage loss only', () => {
+    const result = analyze({
+      payloadMassKg: 0,
+      stages: [
+        {
+          engineKey: 'merlin_1d',
+          engineCount: 1,
+          propellantMassKg: 100000,
+          tankFraction: 0.06,
+        },
+      ],
+    });
+
+    expect(result.stages).toHaveLength(1);
+    expect(result.stages[0].gravity_drag_loss_ms).toBeGreaterThan(1500);
   });
 
   it('shows SLS failing LEO without boosters and reaching LEO with the two SRBs', () => {

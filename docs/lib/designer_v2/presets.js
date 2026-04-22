@@ -8,7 +8,7 @@ export const falcon9 = {
       engineKey: 'merlin_1d',
       engineCount: 9,
       propellantMassKg: 410900,
-      tankFraction: 0.06,
+      tankFraction: 0.05,
     },
     {
       label: 'Stage 2',
@@ -68,7 +68,7 @@ export const slsBlock1 = {
       engineKey: 'rs25',
       engineCount: 4,
       propellantMassKg: 984000,
-      tankFraction: 0.11,
+      tankFraction: 0.1,
     },
     {
       label: 'ICPS',
@@ -98,7 +98,7 @@ export const longMarch5 = {
       engineKey: 'yf77',
       engineCount: 2,
       propellantMassKg: 165300,
-      tankFraction: 0.11,
+      tankFraction: 0.1,
     },
     {
       label: 'Upper stage',
