@@ -69,7 +69,7 @@ describe('designer-v2 smoke flow', () => {
     vi.unstubAllGlobals();
   });
 
-  it('loads Falcon 9, runs Analyze, and shows a near-LEO result within the expected delta-v band', async () => {
+  it('loads Falcon 9, runs Analyze, and shows a LEO verdict within the expected delta-v band', async () => {
     await loadDesignerV2Page();
 
     const presetSelect = document.getElementById('preset-select');
@@ -86,6 +86,7 @@ describe('designer-v2 smoke flow', () => {
     analyzeButton.click();
 
     await waitFor(() => {
+      expect(document.getElementById('verdict-pill')?.textContent).toContain('LEO');
       expect(document.getElementById('summary-status')?.textContent).toContain('Ready');
       expect(document.getElementById('total-dv')?.textContent).not.toBe('—');
     });
@@ -93,12 +94,11 @@ describe('designer-v2 smoke flow', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     expect(window.localStorage.getItem('rocket-theme')).toBe('dark');
     expect(presetSelect.value).toBe('falcon9');
-    expect(document.getElementById('verdict-pill')?.textContent).toContain('Suborbital');
 
     const totalDvText = document.getElementById('total-dv')?.textContent ?? '';
     const totalDv = Number(totalDvText.replace(/[^\d.]/g, ''));
 
-    expect(totalDv).toBeGreaterThanOrEqual(9.0);
-    expect(totalDv).toBeLessThanOrEqual(9.3);
+    expect(totalDv).toBeGreaterThanOrEqual(9.4);
+    expect(totalDv).toBeLessThanOrEqual(9.6);
   });
 });

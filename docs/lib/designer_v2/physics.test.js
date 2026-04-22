@@ -67,7 +67,9 @@ describe('analyze presets', () => {
     const result = analyze(falcon9);
     expect(result.total.dv_kms).toBeGreaterThan(8.93);
     expect(result.total.dv_kms).toBeLessThan(9.87);
+    expect(result.total.verdict).toBe('LEO');
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_met).toBe(true);
   });
 
   it('keeps Saturn V within 5% of the target oracle', () => {
@@ -81,14 +83,18 @@ describe('analyze presets', () => {
     const result = analyze(slsBlock1);
     expect(result.total.dv_kms).toBeGreaterThan(9.025);
     expect(result.total.dv_kms).toBeLessThan(9.975);
+    expect(result.total.verdict).toBe('LEO');
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_met).toBe(true);
   });
 
   it('keeps Long March 5 within 5% of the target oracle', () => {
     const result = analyze(longMarch5);
     expect(result.total.dv_kms).toBeGreaterThan(9.025);
     expect(result.total.dv_kms).toBeLessThan(9.975);
+    expect(result.total.verdict).toBe('LEO');
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_met).toBe(true);
   });
 });
 
@@ -208,7 +214,7 @@ describe('analyze edge cases', () => {
     expect(result.stages[1].warnings.join(' ')).toMatch(/sea-level nozzle selected on an upper stage/i);
   });
 
-  it('shows SLS boosters recovering a large amount of delta-v over the no-booster case', () => {
+  it('shows SLS failing LEO without boosters and reaching LEO with the two SRBs', () => {
     const withoutBoosters = analyze({
       ...slsBlock1,
       boosters: null,
@@ -219,9 +225,10 @@ describe('analyze edge cases', () => {
     expect(withoutBoosters.total.verdict).toBe('Suborbital');
     expect(withoutBoosters.total.mission_target).toBe('LEO');
     expect(withoutBoosters.total.target_met).toBe(false);
-    expect(withBoosters.total.dv_kms).toBeGreaterThan(withoutBoosters.total.dv_kms + 3.5);
-    expect(withBoosters.total.dv_kms).toBeGreaterThan(9);
+    expect(withBoosters.total.dv_kms).toBeGreaterThanOrEqual(9.4);
+    expect(withBoosters.total.verdict).toBe('LEO');
     expect(withBoosters.total.mission_target).toBe('LEO');
+    expect(withBoosters.total.target_met).toBe(true);
     expect(withBoosters.boosters?.dv_ms).toBeGreaterThan(0);
   });
 });
