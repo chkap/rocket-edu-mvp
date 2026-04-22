@@ -32,7 +32,7 @@ export const MISSION_MARKERS = [
   { id: 'meo', labelKey: 'designer_v2.target.meo', glossaryId: 'orbit-meo', altitudeKm: 2000, badge: 'M' },
   { id: 'geo', labelKey: 'designer_v2.target.geo', glossaryId: 'orbit-geo', altitudeKm: 35786, badge: 'G' },
   { id: 'gto', labelKey: 'designer_v2.target.gto', glossaryId: 'orbit-gto', fixedThresholdKmS: 11.8, badge: 'T' },
-  { id: 'tli', labelKey: 'designer_v2.target.tli', glossaryId: 'orbit-tli', fixedThresholdKmS: 12.4, badge: 'U' },
+  { id: 'tli', labelKey: 'designer_v2.target.tli', glossaryId: 'orbit-tli', fixedThresholdKmS: 12.4, badge: 'N' },
 ].map((marker) => ({
   ...marker,
   thresholdKmS: marker.fixedThresholdKmS ?? targetOrbitRequirementKmS(marker.altitudeKm),
@@ -1744,13 +1744,16 @@ function renderMetricContainers(result = null) {
   }
 }
 
+const MISSION_PROGRESS_MAX_KMS = Math.max(
+  ...MISSION_MARKERS.map((marker) => marker.thresholdKmS),
+);
+
 export function missionProgressPercent(deltaVKmS) {
-  const max = MISSION_MARKERS[MISSION_MARKERS.length - 1].thresholdKmS;
   if (!Number.isFinite(deltaVKmS) || deltaVKmS <= 0) {
     return 0;
   }
 
-  return Math.min((deltaVKmS / max) * 100, 100);
+  return Math.min((deltaVKmS / MISSION_PROGRESS_MAX_KMS) * 100, 100);
 }
 
 function translatedVerdict(rawVerdict) {

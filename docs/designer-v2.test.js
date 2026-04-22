@@ -34,11 +34,11 @@ describe('designer-v2 helpers', () => {
   });
 
   it('maps mission progress to the marker bar scale', () => {
+    const maxThreshold = Math.max(...MISSION_MARKERS.map((m) => m.thresholdKmS));
     expect(missionProgressPercent(0)).toBe(0);
-    expect(missionProgressPercent(MISSION_MARKERS[MISSION_MARKERS.length - 1].thresholdKmS)).toBe(100);
-    expect(
-      missionProgressPercent(MISSION_MARKERS[MISSION_MARKERS.length - 1].thresholdKmS / 2)
-    ).toBeCloseTo(50, 1);
+    expect(missionProgressPercent(maxThreshold)).toBe(100);
+    expect(missionProgressPercent(maxThreshold * 2)).toBe(100);
+    expect(missionProgressPercent(maxThreshold / 2)).toBeCloseTo(50, 1);
   });
 
   it('loads preset drafts into analyze-compatible configs', () => {
