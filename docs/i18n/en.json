@@ -342,5 +342,6 @@
   "designer_v2.preset.long_march_5.boosters": "Boosters",
   "designer_v2.footer.prefix": "Advanced rocket designer ·",
   "designer_v2.target.gto": "GTO (11.8 km/s)",
-  "designer_v2.target.tli": "TLI (12.4 km/s)"
+  "designer_v2.target.tli": "TLI (12.4 km/s)",
+  "designer_v2.engine_card.sea_level_na": "Sea-level data not applicable"
 }
