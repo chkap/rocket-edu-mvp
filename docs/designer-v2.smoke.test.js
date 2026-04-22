@@ -508,4 +508,14 @@ describe('designer-v2 smoke flow', () => {
     expect(css).toContain("math[display='block']");
   });
 
+  it('constrains sidebar sticky height to prevent silhouette occluding mission desk', async () => {
+    const cssPath = path.join(docsDir, 'designer-v2.css');
+    const css = await fs.readFile(cssPath, 'utf-8');
+
+    // Sidebar uses sticky positioning with max-height constraint at desktop width
+    expect(css).toMatch(/\.designer-v2-sidebar\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(/\.designer-v2-sidebar\s*\{[^}]*max-height:\s*calc\(100vh\s*-\s*2rem\)/);
+    expect(css).toMatch(/\.designer-v2-sidebar\s*\{[^}]*overflow-y:\s*auto/);
+  });
+
 });
