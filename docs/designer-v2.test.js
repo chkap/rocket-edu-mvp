@@ -4,6 +4,7 @@ import catalog from './data/engines.json' with { type: 'json' };
 import { analyze } from './lib/designer_v2/physics.js';
 import {
   defaultTankFractionForPropellant,
+  MISSION_MARKERS,
   missionProgressPercent,
   reorderUpperStages,
   loadDraftFromPreset,
@@ -30,8 +31,10 @@ describe('designer-v2 helpers', () => {
 
   it('maps mission progress to the marker bar scale', () => {
     expect(missionProgressPercent(0)).toBe(0);
-    expect(missionProgressPercent(15.8)).toBe(100);
-    expect(missionProgressPercent(7.9)).toBeCloseTo(50, 1);
+    expect(missionProgressPercent(MISSION_MARKERS[MISSION_MARKERS.length - 1].thresholdKmS)).toBe(100);
+    expect(
+      missionProgressPercent(MISSION_MARKERS[MISSION_MARKERS.length - 1].thresholdKmS / 2)
+    ).toBeCloseTo(50, 1);
   });
 
   it('loads preset drafts into analyze-compatible configs', () => {
@@ -42,7 +45,9 @@ describe('designer-v2 helpers', () => {
     expect(config.boosters?.count).toBe(2);
     expect(draft.boosters?.type).toBe('solid');
     expect(config.stages).toHaveLength(2);
+    expect(config.targetOrbitAltitudeKm).toBe(200);
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_requirement_kms).toBeCloseTo(9.4, 5);
     expect(result.total.dv_kms).toBeGreaterThan(9);
   });
 
@@ -53,15 +58,15 @@ describe('designer-v2 helpers', () => {
 
     expect(falcon.stages).toHaveLength(2);
     expect(falcon.boosters).toBeNull();
-    expect(falcon.missionTarget).toBe('LEO');
+    expect(falcon.targetOrbitAltitudeKm).toBe(200);
 
     expect(saturn.stages).toHaveLength(3);
     expect(saturn.boosters).toBeNull();
-    expect(saturn.missionTarget).toBe('TLI');
+    expect(saturn.targetOrbitAltitudeKm).toBe(200);
 
     expect(longMarch.stages).toHaveLength(2);
     expect(longMarch.boosters?.count).toBe(4);
-    expect(longMarch.missionTarget).toBe('LEO');
+    expect(longMarch.targetOrbitAltitudeKm).toBe(200);
   });
 
   it('keeps the dedicated booster card inactive at count 0', () => {

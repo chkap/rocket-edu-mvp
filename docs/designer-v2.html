@@ -78,6 +78,28 @@
           <p id="designer-v2-error" class="callout callout-danger" role="alert" aria-live="polite" hidden></p>
 
           <form id="designer-v2-form" novalidate>
+            <div class="designer-v2-mission-panel">
+              <div class="form-field designer-v2-mission-field">
+                <label for="target-orbit-altitude" data-i18n="designer_v2.field.target_orbit_altitude"></label>
+                <p class="designer-v2-preset-copy muted" data-i18n="designer_v2.controls.target_orbit_note"></p>
+                <div
+                  id="mission-quick-picks"
+                  class="designer-v2-preset-chips"
+                  data-i18n="designer_v2.controls.target_quick_picks"
+                  data-i18n-attr="aria-label"
+                ></div>
+                <input
+                  id="target-orbit-altitude"
+                  type="number"
+                  inputmode="numeric"
+                  min="200"
+                  max="100000"
+                  step="10"
+                />
+                <p id="target-orbit-altitude-error" class="field-error" aria-live="polite"></p>
+                <p id="mission-target-preview" class="designer-v2-note" aria-live="polite"></p>
+              </div>
+            </div>
             <div id="booster-slot"></div>
             <div id="stage-list" class="designer-v2-stage-list"></div>
           </form>

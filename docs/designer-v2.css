@@ -36,6 +36,19 @@
   min-width: min(100%, 18rem);
 }
 
+.designer-v2-mission-panel {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  background: var(--surface-muted);
+}
+
+.designer-v2-mission-field {
+  display: grid;
+  gap: 0.6rem;
+}
+
 .designer-v2-preset-copy {
   margin: 0;
 }
@@ -46,20 +59,23 @@
   gap: 0.5rem;
 }
 
-.designer-v2-preset-chip {
+.designer-v2-preset-chip,
+.designer-v2-mission-chip {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text);
   box-shadow: none;
 }
 
-.designer-v2-preset-chip:hover {
+.designer-v2-preset-chip:hover,
+.designer-v2-mission-chip:hover {
   border-color: var(--accent-border);
   background: var(--accent-soft);
   color: var(--accent-text);
 }
 
-.designer-v2-preset-chip.is-active {
+.designer-v2-preset-chip.is-active,
+.designer-v2-mission-chip.is-active {
   border-color: var(--accent-border);
   background: var(--accent-soft);
   color: var(--accent-text);

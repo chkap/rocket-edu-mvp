@@ -11,6 +11,8 @@ const DEFAULT_TANK_FRACTIONS = {
 };
 
 const DEFAULT_FAIRING_MASS_KG = 1500;
+const EARTH_RADIUS_KM = 6378.137;
+const EARTH_MU_M3_S2 = 3.986004418e14;
 
 const VERDICT_THRESHOLDS = [
   { label: 'Lunar landing', min_kms: 15.8 },
@@ -19,6 +21,9 @@ const VERDICT_THRESHOLDS = [
   { label: 'GTO', min_kms: 11.8 },
   { label: 'LEO', min_kms: 9.4 },
 ];
+export const BASELINE_ORBIT_ALTITUDE_KM = 200;
+const BASELINE_LEO_REQUIREMENT_KMS =
+  VERDICT_THRESHOLDS.find((threshold) => threshold.label === 'LEO')?.min_kms ?? 9.4;
 
 function assertFiniteNumber(name, value) {
   if (!Number.isFinite(value)) {
@@ -219,6 +224,36 @@ export function upperStageGravityLoss(twrIgnition) {
   // ignition TWR rises, instead of reusing the large first-stage atmospheric term.
   const lossMs = 30 + 45 / twrIgnition;
   return Math.min(150, Math.max(50, lossMs));
+}
+
+export function targetOrbitRequirementKmS(targetOrbitAltitudeKm) {
+  assertFiniteNumber('targetOrbitAltitudeKm', targetOrbitAltitudeKm);
+  if (targetOrbitAltitudeKm < BASELINE_ORBIT_ALTITUDE_KM) {
+    throw new Error(`targetOrbitAltitudeKm must be greater than or equal to ${BASELINE_ORBIT_ALTITUDE_KM}.`);
+  }
+  // Circular-orbit mission planning now starts from the tool's existing 200 km
+  // LEO floor, then adds the extra Hohmann-transfer delta-v to the chosen
+  // circular orbit using vis-viva (v = sqrt(mu * (2 / r - 1 / a))).
+  // Issue #23 collected the advisory mission-budget context that motivated
+  // replacing the old fixed table:
+  // https://github.com/chkap/rocket-edu-mvp/issues/23#issuecomment-4286980274
+  const parkingRadiusM = (EARTH_RADIUS_KM + BASELINE_ORBIT_ALTITUDE_KM) * 1000;
+  const targetRadiusM = (EARTH_RADIUS_KM + targetOrbitAltitudeKm) * 1000;
+  const semiMajorAxisM = (parkingRadiusM + targetRadiusM) / 2;
+  const parkingCircularSpeed = Math.sqrt(EARTH_MU_M3_S2 / parkingRadiusM);
+  const targetCircularSpeed = Math.sqrt(EARTH_MU_M3_S2 / targetRadiusM);
+  const transferDepartureSpeed = Math.sqrt(
+    EARTH_MU_M3_S2 * (2 / parkingRadiusM - 1 / semiMajorAxisM)
+  );
+  const transferArrivalSpeed = Math.sqrt(
+    EARTH_MU_M3_S2 * (2 / targetRadiusM - 1 / semiMajorAxisM)
+  );
+  const transferDvKmS =
+    (Math.abs(transferDepartureSpeed - parkingCircularSpeed) +
+      Math.abs(targetCircularSpeed - transferArrivalSpeed)) /
+    1000;
+
+  return BASELINE_LEO_REQUIREMENT_KMS + transferDvKmS;
 }
 
 export function verdict(dv_kms) {
@@ -491,6 +526,11 @@ export function analyze(config) {
     analyzedStages.reduce((sum, stage) => sum + stage.dv_ms, 0),
     0
   );
+  const targetOrbitAltitudeKm = Number.isFinite(config.targetOrbitAltitudeKm)
+    ? config.targetOrbitAltitudeKm
+    : null;
+  const targetRequirementKmS =
+    targetOrbitAltitudeKm !== null ? targetOrbitRequirementKmS(targetOrbitAltitudeKm) : null;
 
   return {
     stages: analyzedStages.map((stage) => ({
@@ -508,8 +548,12 @@ export function analyze(config) {
       dv_kms: totalDvMs / 1000,
       verdict: verdict(totalDvMs / 1000),
       mission_target: config.missionTarget ?? null,
+      target_orbit_altitude_km: targetOrbitAltitudeKm,
+      target_requirement_kms: targetRequirementKmS,
       target_met:
-        typeof config.missionTarget === 'string'
+        targetRequirementKmS !== null
+          ? totalDvMs / 1000 >= targetRequirementKmS
+          : typeof config.missionTarget === 'string'
           ? verdict(totalDvMs / 1000) === config.missionTarget
           : null,
       warnings: cloneWarnings(warnings),
