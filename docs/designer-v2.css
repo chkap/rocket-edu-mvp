@@ -439,6 +439,99 @@
   color: var(--accent-text);
 }
 
+.designer-v2-explainer {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.designer-v2-explainer-summary {
+  cursor: pointer;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  list-style: none;
+}
+
+.designer-v2-explainer-summary::-webkit-details-marker {
+  display: none;
+}
+
+.designer-v2-explainer-summary::after {
+  content: '+';
+  float: right;
+  color: var(--muted);
+}
+
+.designer-v2-explainer[open] .designer-v2-explainer-summary::after {
+  content: '−';
+}
+
+.designer-v2-explainer-body {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0 1rem 1rem;
+}
+
+.designer-v2-explainer-copy {
+  margin: 0;
+}
+
+.designer-v2-budget-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.designer-v2-budget-row {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.designer-v2-budget-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.designer-v2-budget-track {
+  position: relative;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.designer-v2-budget-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+}
+
+.designer-v2-budget-row.is-stage .designer-v2-budget-bar {
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 70%, white 30%));
+}
+
+.designer-v2-budget-row.is-loss .designer-v2-budget-bar {
+  background: linear-gradient(90deg, #f97316, #fb923c);
+}
+
+.designer-v2-budget-row.is-requirement .designer-v2-budget-track {
+  background:
+    linear-gradient(var(--surface-muted), var(--surface-muted)) padding-box,
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 0.25rem,
+      color-mix(in srgb, var(--accent-text) 55%, transparent 45%) 0.25rem 0.5rem
+    ) border-box;
+  border: 1px dashed color-mix(in srgb, var(--accent-text) 55%, transparent 45%);
+}
+
+.designer-v2-budget-row.is-requirement .designer-v2-budget-bar {
+  background: linear-gradient(90deg, var(--accent-text), color-mix(in srgb, var(--accent-text) 70%, white 30%));
+}
+
 .designer-v2-warning-list {
   margin: 0;
   padding-left: 1.15rem;
