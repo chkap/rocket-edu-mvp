@@ -470,4 +470,24 @@ describe('designer-v2 smoke flow', () => {
     expect(navControls.querySelector('.lang-switcher')).not.toBeNull();
   });
 
+  it('includes accessible focus and contrast CSS rules', async () => {
+    const cssPath = path.join(docsDir, 'style.css');
+    const css = await fs.readFile(cssPath, 'utf-8');
+
+    // Focus ring defined for interactive elements
+    expect(css).toContain('a:focus-visible');
+    expect(css).toContain('button:focus-visible');
+    expect(css).toContain('select:focus-visible');
+    expect(css).toContain('outline: 3px solid var(--focus)');
+
+    // Dark theme overrides focus color for visibility
+    expect(css).toMatch(/\[data-theme=['"]dark['"]\][\s\S]*--focus:\s*#fbbf24/);
+
+    // Footer links have explicit styling
+    expect(css).toContain('footer a');
+
+    // Display math has centered block styling
+    expect(css).toContain("math[display='block']");
+  });
+
 });
