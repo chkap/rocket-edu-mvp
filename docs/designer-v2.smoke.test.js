@@ -28,12 +28,19 @@ async function waitFor(check, timeoutMs = 2000) {
   throw lastError ?? new Error('Timed out waiting for smoke test condition.');
 }
 
-async function loadDesignerV2Page() {
+async function loadDesignerV2Page({ hash = '' } = {}) {
   const html = await fs.readFile(htmlPath, 'utf8');
 
   document.open();
   document.write(html);
   document.close();
+  window.history.replaceState({}, '', hash || window.location.pathname || '/');
+
+  if (!navigator.clipboard) {
+    navigator.clipboard = {
+      writeText: vi.fn(async () => {}),
+    };
+  }
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input) => {
@@ -228,6 +235,61 @@ describe('designer-v2 smoke flow', () => {
     await waitFor(() => {
       expect(glossaryItem.classList.contains('is-open')).toBe(false);
       expect(glossaryTooltip.hasAttribute('hidden')).toBe(true);
+    });
+  });
+
+  it('copies a share link and restores the encoded design from the URL fragment', async () => {
+    const clipboardWrite = vi.fn(async () => {});
+    navigator.clipboard = { writeText: clipboardWrite };
+
+    await loadDesignerV2Page();
+
+    const presetSelect = document.getElementById('preset-select');
+    const copyButton = document.getElementById('copy-share-link');
+
+    expect(presetSelect).not.toBeNull();
+    expect(copyButton).not.toBeNull();
+
+    presetSelect.value = 'longMarch5';
+    presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    const payloadInput = document.getElementById('payload-mass');
+    const targetOrbitInput = document.getElementById('target-orbit-altitude');
+    const boosterCountInput = document.getElementById('booster-count');
+
+    expect(payloadInput).not.toBeNull();
+    expect(targetOrbitInput).not.toBeNull();
+    expect(boosterCountInput).not.toBeNull();
+
+    payloadInput.value = '12345';
+    payloadInput.dispatchEvent(new Event('input', { bubbles: true }));
+    targetOrbitInput.value = '2000';
+    targetOrbitInput.dispatchEvent(new Event('input', { bubbles: true }));
+    boosterCountInput.value = '3';
+    boosterCountInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(document.getElementById('preset-select')?.value).toBe('custom');
+      expect(window.location.hash).toContain('#d=');
+    });
+
+    copyButton.click();
+
+    await waitFor(() => {
+      expect(clipboardWrite).toHaveBeenCalledTimes(1);
+    });
+
+    const copiedUrl = clipboardWrite.mock.calls[0][0];
+    expect(copiedUrl).toContain('#d=');
+
+    vi.resetModules();
+    await loadDesignerV2Page({ hash: new URL(copiedUrl).hash });
+
+    await waitFor(() => {
+      expect(document.getElementById('payload-mass')?.value).toBe('12345');
+      expect(document.getElementById('target-orbit-altitude')?.value).toBe('2000');
+      expect(document.getElementById('booster-count')?.value).toBe('3');
+      expect(document.getElementById('share-status')?.textContent).toContain('restored');
     });
   });
 });

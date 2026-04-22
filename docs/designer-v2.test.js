@@ -3,10 +3,14 @@ import { describe, expect, it } from 'vitest';
 import catalog from './data/engines.json' with { type: 'json' };
 import { analyze } from './lib/designer_v2/physics.js';
 import {
+  buildShareUrl,
   defaultTankFractionForPropellant,
+  decodeShareDraft,
+  encodeShareDraft,
   MISSION_MARKERS,
   missionProgressPercent,
   reorderUpperStages,
+  restoreSharedDraftFromHash,
   loadDraftFromPreset,
   buildAnalyzeConfig,
 } from './designer-v2.js';
@@ -84,5 +88,37 @@ describe('designer-v2 helpers', () => {
     expect(draft.boosters?.type).toBe('liquid');
     expect(config.boosters?.engineKey).toBe('lm5_booster_blob');
     expect(config.boosters?.count).toBe(4);
+  });
+
+  it('round-trips a shared draft through the URL fragment payload', () => {
+    const draft = {
+      ...loadDraftFromPreset('longMarch5', catalog.engines),
+      presetId: 'custom',
+      payloadMassKg: '12345',
+      targetOrbitAltitudeKm: '2000',
+      boosters: {
+        ...loadDraftFromPreset('longMarch5', catalog.engines).boosters,
+        count: '2',
+      },
+    };
+
+    const encoded = encodeShareDraft(draft);
+    const decoded = decodeShareDraft(encoded, catalog.engines);
+    const shareUrl = buildShareUrl(draft, 'https://example.test/designer-v2.html');
+    const restored = restoreSharedDraftFromHash(new URL(shareUrl).hash, catalog.engines);
+
+    expect(decoded?.payloadMassKg).toBe('12345');
+    expect(decoded?.targetOrbitAltitudeKm).toBe('2000');
+    expect(decoded?.boosters?.count).toBe('2');
+    expect(shareUrl).toContain('#d=');
+    expect(restored.status).toBe('restored');
+    expect(restored.draft?.stages).toHaveLength(2);
+  });
+
+  it('rejects malformed share fragments safely', () => {
+    expect(restoreSharedDraftFromHash('#d=not-valid-base64', catalog.engines)).toEqual({
+      draft: null,
+      status: 'invalid',
+    });
   });
 });
