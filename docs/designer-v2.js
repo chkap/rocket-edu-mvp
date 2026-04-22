@@ -2061,6 +2061,7 @@ function setCompareMode(enabled) {
   const compare = document.getElementById('designer-v2-compare');
   const paneA = document.getElementById('compare-pane-a');
   const paneB = document.getElementById('compare-pane-b');
+  const compareToggleButton = document.getElementById('compare-mode-toggle');
   if (!single || !compare || !paneA || !paneB) {
     return;
   }
@@ -2068,6 +2069,7 @@ function setCompareMode(enabled) {
   compareState.enabled = enabled;
   single.hidden = enabled;
   compare.hidden = !enabled;
+  compareToggleButton?.setAttribute('aria-pressed', String(enabled));
 
   if (!enabled) {
     return;

@@ -364,12 +364,14 @@ describe('designer-v2 smoke flow', () => {
     expect(comparePaneB).not.toBeNull();
     expect(compareSection).not.toBeNull();
     expect(singleSection).not.toBeNull();
+    expect(compareToggle?.getAttribute('aria-pressed')).toBe('false');
 
     compareToggle.click();
 
     await waitFor(() => {
       expect(compareSection.hidden).toBe(false);
       expect(singleSection.hidden).toBe(true);
+      expect(compareToggle?.getAttribute('aria-pressed')).toBe('true');
       expect(comparePaneA.src).toContain('embed=1');
       expect(comparePaneA.src).toContain('pane=A');
       expect(comparePaneB.src).toContain('pane=B');
@@ -406,6 +408,7 @@ describe('designer-v2 smoke flow', () => {
     await waitFor(() => {
       expect(compareSection.hidden).toBe(true);
       expect(singleSection.hidden).toBe(false);
+      expect(compareToggle?.getAttribute('aria-pressed')).toBe('false');
     });
   });
 });
