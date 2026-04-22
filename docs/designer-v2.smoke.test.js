@@ -202,4 +202,32 @@ describe('designer-v2 smoke flow', () => {
       expect(explainer.textContent).toContain('Shortfall');
     });
   });
+
+  it('opens glossary tooltips on focus and closes them on Escape', async () => {
+    await loadDesignerV2Page();
+
+    const glossaryTrigger = document.querySelector('[data-glossary-trigger="delta-v"]');
+    const glossaryItem = document.querySelector('[data-glossary-item="delta-v"]');
+    const glossaryTooltip = document.getElementById('glossary-delta-v');
+
+    expect(glossaryTrigger).not.toBeNull();
+    expect(glossaryItem).not.toBeNull();
+    expect(glossaryTooltip).not.toBeNull();
+    expect(document.querySelectorAll('[data-glossary-item]')).toHaveLength(13);
+
+    glossaryTrigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(glossaryItem.classList.contains('is-open')).toBe(true);
+      expect(glossaryTooltip.hasAttribute('hidden')).toBe(false);
+      expect(glossaryTooltip.textContent).toContain('velocity');
+    });
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    await waitFor(() => {
+      expect(glossaryItem.classList.contains('is-open')).toBe(false);
+      expect(glossaryTooltip.hasAttribute('hidden')).toBe(true);
+    });
+  });
 });
