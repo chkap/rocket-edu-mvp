@@ -90,6 +90,22 @@ const PRESET_OPTIONS = [
   },
 ];
 
+const GLOSSARY_TERMS = [
+  { id: 'delta-v', labelKey: 'designer_v2.glossary.term.delta_v', bodyKey: 'designer_v2.glossary.body.delta_v' },
+  { id: 'isp', labelKey: 'designer_v2.glossary.term.isp', bodyKey: 'designer_v2.glossary.body.isp' },
+  { id: 'twr', labelKey: 'designer_v2.glossary.term.twr', bodyKey: 'designer_v2.glossary.body.twr' },
+  { id: 'mr', labelKey: 'designer_v2.glossary.term.mr', bodyKey: 'designer_v2.glossary.body.mr' },
+  { id: 'stage', labelKey: 'designer_v2.glossary.term.stage', bodyKey: 'designer_v2.glossary.body.stage' },
+  { id: 'booster', labelKey: 'designer_v2.glossary.term.booster', bodyKey: 'designer_v2.glossary.body.booster' },
+  { id: 'fairing', labelKey: 'designer_v2.glossary.term.fairing', bodyKey: 'designer_v2.glossary.body.fairing' },
+  { id: 'vacuum-isp', labelKey: 'designer_v2.glossary.term.vacuum_isp', bodyKey: 'designer_v2.glossary.body.vacuum_isp' },
+  { id: 'sea-level-isp', labelKey: 'designer_v2.glossary.term.sea_level_isp', bodyKey: 'designer_v2.glossary.body.sea_level_isp' },
+  { id: 'specific-impulse', labelKey: 'designer_v2.glossary.term.specific_impulse', bodyKey: 'designer_v2.glossary.body.specific_impulse' },
+  { id: 'mass-ratio', labelKey: 'designer_v2.glossary.term.mass_ratio', bodyKey: 'designer_v2.glossary.body.mass_ratio' },
+  { id: 'burn-time', labelKey: 'designer_v2.glossary.term.burn_time', bodyKey: 'designer_v2.glossary.body.burn_time' },
+  { id: 'gravity-loss', labelKey: 'designer_v2.glossary.term.gravity_loss', bodyKey: 'designer_v2.glossary.body.gravity_loss' },
+];
+
 const numberFmt = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 0,
 });
@@ -228,6 +244,120 @@ function renderMissionControls() {
     target: formatTargetOrbitLabel(altitudeKm),
     requirement: oneDecimalFmt.format(targetOrbitRequirementKmS(altitudeKm)),
   });
+}
+
+function closeGlossaryTooltips(root = document) {
+  if (!root || typeof root.querySelectorAll !== 'function') {
+    return;
+  }
+
+  root.querySelectorAll('.designer-v2-glossary-item.is-open').forEach((item) => {
+    item.classList.remove('is-open');
+    item.querySelector('[data-glossary-trigger]')?.setAttribute('aria-expanded', 'false');
+    item.querySelector('[role="tooltip"]')?.setAttribute('hidden', '');
+  });
+}
+
+function openGlossaryTooltip(item) {
+  if (!(item instanceof HTMLElement)) {
+    return;
+  }
+
+  closeGlossaryTooltips(item.ownerDocument ?? document);
+  item.classList.add('is-open');
+  item.querySelector('[data-glossary-trigger]')?.setAttribute('aria-expanded', 'true');
+  item.querySelector('[role="tooltip"]')?.removeAttribute('hidden');
+}
+
+function renderGlossary() {
+  const glossaryList = document.getElementById('glossary-list');
+  if (!glossaryList) {
+    return;
+  }
+
+  glossaryList.innerHTML = GLOSSARY_TERMS.map(
+    (term) => `
+      <span class="designer-v2-glossary-item" data-glossary-item="${term.id}">
+        <button
+          type="button"
+          class="designer-v2-glossary-trigger"
+          data-glossary-trigger="${term.id}"
+          aria-expanded="false"
+          aria-describedby="glossary-${term.id}"
+        >
+          ${t(term.labelKey)}
+        </button>
+        <span id="glossary-${term.id}" class="designer-v2-glossary-tooltip" role="tooltip" hidden>
+          <strong>${t(term.labelKey)}</strong>
+          ${t(term.bodyKey)}
+        </span>
+      </span>
+    `
+  ).join('');
+
+  if (glossaryList.getAttribute('data-glossary-bound') === 'true') {
+    return;
+  }
+
+  glossaryList.addEventListener('focusin', (event) => {
+    const item = event.target.closest('[data-glossary-item]');
+    if (item instanceof HTMLElement) {
+      openGlossaryTooltip(item);
+    }
+  });
+
+  glossaryList.addEventListener('focusout', (event) => {
+    const item = event.target.closest('[data-glossary-item]');
+    if (!(item instanceof HTMLElement) || item.contains(event.relatedTarget)) {
+      return;
+    }
+
+    closeGlossaryTooltips(glossaryList);
+  });
+
+  glossaryList.addEventListener('mouseover', (event) => {
+    const item = event.target.closest('[data-glossary-item]');
+    if (item instanceof HTMLElement) {
+      openGlossaryTooltip(item);
+    }
+  });
+
+  glossaryList.addEventListener('mouseout', (event) => {
+    const item = event.target.closest('[data-glossary-item]');
+    if (!(item instanceof HTMLElement) || item.contains(event.relatedTarget)) {
+      return;
+    }
+
+    closeGlossaryTooltips(glossaryList);
+  });
+
+  glossaryList.addEventListener('click', (event) => {
+    const item = event.target.closest('[data-glossary-item]');
+    if (!(item instanceof HTMLElement)) {
+      return;
+    }
+
+    if (item.classList.contains('is-open')) {
+      closeGlossaryTooltips(glossaryList);
+      return;
+    }
+
+    openGlossaryTooltip(item);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeGlossaryTooltips(glossaryList);
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!glossaryList.contains(event.target)) {
+      closeGlossaryTooltips(glossaryList);
+    }
+  });
+
+  glossaryList.setAttribute('data-glossary-bound', 'true');
 }
 
 function getEngineMap(engines = state.engines) {
@@ -1768,6 +1898,7 @@ async function init() {
   }
 
   applyDraft(loadDraftFromPreset('custom', state.engines));
+  renderGlossary();
   renderCards();
   updateOutputs();
   enableDragAndDrop();
