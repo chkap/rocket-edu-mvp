@@ -1,3 +1,4 @@
+import './site-header.js';
 import { formatMessage, initPage, t } from './lib/i18n.js';
 
 const G0 = 9.80665;

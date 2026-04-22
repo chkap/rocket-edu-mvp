@@ -439,21 +439,32 @@ describe('designer-v2 smoke flow', () => {
     expect(siblingText).toBe('');
   });
 
-  it('renders the header bar with H1, nav, theme toggle, and language toggle', async () => {
+  it('renders unified header with site title, nav, theme toggle, and language toggle', async () => {
     await loadDesignerV2Page();
 
     const header = document.querySelector('header');
     expect(header).not.toBeNull();
 
-    const h1 = header.querySelector('h1');
+    // Site title link
+    const siteTitle = header.querySelector('.site-title');
+    expect(siteTitle).not.toBeNull();
+    expect(siteTitle.getAttribute('href')).toBe('./index.html');
+
+    // Page hero H1 is in main, not header
+    const h1 = document.querySelector('.page-hero h1');
     expect(h1).not.toBeNull();
     expect(h1.textContent.length).toBeGreaterThan(0);
 
     const navRow = header.querySelector('.nav-row');
     expect(navRow).not.toBeNull();
 
-    const navLinks = navRow.querySelectorAll('nav ul a, ul a');
-    expect(navLinks.length).toBeGreaterThanOrEqual(2);
+    // Unified nav has 4 links (index, designer, designer-v2, glossary)
+    const navLinks = navRow.querySelectorAll('ul a');
+    expect(navLinks.length).toBe(4);
+
+    // Active page is marked
+    const activePage = navRow.querySelector('a[aria-current="page"]');
+    expect(activePage).not.toBeNull();
 
     const themeToggle = header.querySelector('[data-theme-toggle]');
     expect(themeToggle).not.toBeNull();

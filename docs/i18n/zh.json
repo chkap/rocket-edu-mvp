@@ -343,5 +343,7 @@
   "designer_v2.footer.prefix": "高级火箭设计器 ·",
   "designer_v2.target.gto": "GTO（11.8 km/s）",
   "designer_v2.target.tli": "TLI（12.4 km/s）",
-  "designer_v2.engine_card.sea_level_na": "海平面数据不适用"
+  "designer_v2.engine_card.sea_level_na": "海平面数据不适用",
+  "site.title": "火箭方程",
+  "nav.glossary": "飞行术语表"
 }

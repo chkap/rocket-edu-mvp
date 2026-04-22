@@ -4,6 +4,7 @@ import {
   targetOrbitRequirementKmS,
 } from './lib/designer_v2/physics.js';
 import { PRESETS } from './lib/designer_v2/presets.js';
+import './site-header.js';
 import { formatMessage, initPage, t } from './lib/i18n.js';
 
 const MAX_STAGES = 4;

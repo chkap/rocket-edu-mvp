@@ -199,6 +199,63 @@ header > * {
   margin-right: auto;
 }
 
+.site-title {
+  display: block;
+  font-family: var(--display-font);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+
+.site-title:hover {
+  color: var(--primary);
+}
+
+.page-hero {
+  grid-column: 1 / -1;
+}
+
+.page-hero h1 {
+  margin-bottom: 0.35rem;
+}
+
+.page-hero p {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.section-nav {
+  grid-column: 1 / -1;
+}
+
+.section-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.section-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 main#content {
   max-width: 70rem;
   margin: 0 auto;
@@ -647,13 +704,6 @@ footer a {
 
 footer a:hover {
   color: var(--primary-hover);
-}
-
-header > p {
-  max-width: 42rem;
-  margin: 0 0 0.15rem 0;
-  color: var(--muted);
-  font-size: 1.02rem;
 }
 
 section h2 + p,

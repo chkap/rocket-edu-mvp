@@ -15,37 +15,23 @@
   </head>
 
   <body>
-    <header>
-      <h1 data-i18n="index.hero.title"></h1>
-      <p data-i18n="index.hero.subtitle"></p>
-
-      <nav aria-label="Primary" data-i18n="nav.primary" data-i18n-attr="aria-label">
-        <div class="nav-row">
-          <ul>
-            <li><a href="./designer.html" data-i18n="nav.designer"></a></li>
-            <li><a href="./designer-v2.html" data-i18n="nav.designer_v2"></a></li>
-            <li><a href="#equation" data-i18n="nav.equation"></a></li>
-            <li><a href="#explanation" data-i18n="nav.explanation"></a></li>
-            <li><a href="#calculator" data-i18n="nav.calculator"></a></li>
-            <li><a href="#worked-example" data-i18n="nav.worked_example"></a></li>
-            <li><a href="#intuition" data-i18n="nav.intuition"></a></li>
-          </ul>
-          <div class="nav-controls">
-            <div class="theme-switcher">
-              <span class="theme-switcher-label" data-i18n="theme.label"></span>
-              <button type="button" class="theme-toggle" data-theme-toggle></button>
-            </div>
-            <div class="lang-switcher" data-i18n="nav.language_switcher" data-i18n-attr="aria-label">
-              <button type="button" data-set-lang="en" data-i18n="lang.english"></button>
-              <span class="lang-switcher-separator">|</span>
-              <button type="button" data-set-lang="zh" data-i18n="lang.chinese"></button>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </header>
 
     <main id="content">
+      <div class="page-hero">
+        <h1 data-i18n="index.hero.title"></h1>
+        <p data-i18n="index.hero.subtitle"></p>
+      </div>
+
+      <nav class="section-nav" aria-label="Page sections">
+        <ul>
+          <li><a href="#equation" data-i18n="nav.equation"></a></li>
+          <li><a href="#explanation" data-i18n="nav.explanation"></a></li>
+          <li><a href="#calculator" data-i18n="nav.calculator"></a></li>
+          <li><a href="#worked-example" data-i18n="nav.worked_example"></a></li>
+          <li><a href="#intuition" data-i18n="nav.intuition"></a></li>
+        </ul>
+      </nav>
+
       <section id="equation" aria-labelledby="equation-title">
         <h2 id="equation-title" data-i18n="index.equation.title"></h2>
 
