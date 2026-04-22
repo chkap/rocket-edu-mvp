@@ -24,6 +24,12 @@ const BOOSTER_TYPES = {
 };
 const SHARE_FRAGMENT_KEY = 'd';
 const SHARE_VERSION = 1;
+const PAGE_PARAMS =
+  typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+const EMBED_MODE = PAGE_PARAMS.get('embed') === '1';
+const COMPARE_PANE_ID = PAGE_PARAMS.get('pane');
+const COMPARE_PANES = ['A', 'B'];
+const VERDICT_ORDER = ['Suborbital', 'LEO', 'GTO', 'TLI', 'Mars', 'Lunar landing'];
 
 export const MISSION_MARKERS = [
   { id: 'leo', labelKey: 'designer_v2.target.leo', altitudeKm: 200, badge: 'L' },
@@ -135,6 +141,13 @@ const state = {
   stages: [],
   boosters: null,
 };
+const compareState = {
+  enabled: false,
+  summaries: {
+    A: null,
+    B: null,
+  },
+};
 
 function encodeBase64(raw) {
   if (typeof btoa === 'function') {
@@ -226,6 +239,11 @@ export function snapshotShareDraft(draft = state) {
     stages: draft.stages.map((stage) => cloneStageForShare(stage)),
     boosters: cloneBoostersForShare(draft.boosters),
   };
+}
+
+function verdictRank(verdictLabel) {
+  const rank = VERDICT_ORDER.indexOf(verdictLabel);
+  return rank >= 0 ? rank : 0;
 }
 
 function sanitizeSharedDraft(rawDraft, engines = state.engines) {
@@ -349,6 +367,14 @@ export function buildShareUrl(draft = state, href = window.location.href) {
   return url.toString();
 }
 
+export function buildComparePaneUrl(pane, draft = state, href = window.location.href) {
+  const url = new URL(href);
+  url.searchParams.set('embed', '1');
+  url.searchParams.set('pane', pane);
+  url.hash = new URL(buildShareUrl(draft, href)).hash;
+  return url.toString();
+}
+
 export function restoreSharedDraftFromHash(hash = window.location.hash, engines = state.engines) {
   const params = new URLSearchParams(String(hash).replace(/^#/, ''));
   const encodedDraft = params.get(SHARE_FRAGMENT_KEY);
@@ -376,6 +402,14 @@ function syncShareFragment() {
   }
 
   window.location.hash = new URL(shareUrl).hash;
+}
+
+export function launchMassKgForResult(result) {
+  if (!result?.stages?.length) {
+    return null;
+  }
+
+  return result.stages[0].wet_stack_mass_kg + (result.boosters?.wet_mass_kg ?? 0);
 }
 
 function editableNumber(value, digits = 2) {
@@ -1899,6 +1933,156 @@ function renderRocketSilhouette() {
   `;
 }
 
+function postCompareSummary(result, blocked, errorMessage = '') {
+  if (!EMBED_MODE || !COMPARE_PANES.includes(COMPARE_PANE_ID) || typeof window === 'undefined') {
+    return;
+  }
+
+  const summary = result
+    ? {
+        pane: COMPARE_PANE_ID,
+        blocked,
+        errorMessage,
+        dvKms: result.total.dv_kms,
+        launchMassKg: launchMassKgForResult(result),
+        verdict: result.total.verdict,
+      }
+    : {
+        pane: COMPARE_PANE_ID,
+        blocked,
+        errorMessage,
+        dvKms: null,
+        launchMassKg: null,
+        verdict: null,
+      };
+
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage(
+      {
+        type: 'designer-v2-compare-summary',
+        summary,
+      },
+      window.location.origin
+    );
+  }
+}
+
+function compareMetricCard(title, paneA, paneB, delta) {
+  return `
+    <article class="designer-v2-compare-card">
+      <h4>${title}</h4>
+      <p>${formatMessage('designer_v2.compare.pane_value', { pane: 'A', value: paneA })}</p>
+      <p>${formatMessage('designer_v2.compare.pane_value', { pane: 'B', value: paneB })}</p>
+      <strong class="designer-v2-compare-delta">${delta}</strong>
+    </article>
+  `;
+}
+
+function renderCompareSummary() {
+  const container = document.getElementById('compare-summary-cards');
+  if (!container) {
+    return;
+  }
+
+  const summaryA = compareState.summaries.A;
+  const summaryB = compareState.summaries.B;
+  if (!summaryA || !summaryB || summaryA.dvKms === null || summaryB.dvKms === null) {
+    container.innerHTML = `<article class="designer-v2-compare-card"><h4>${t(
+      'designer_v2.compare.summary_title'
+    )}</h4><p>${t('designer_v2.compare.waiting')}</p></article>`;
+    return;
+  }
+
+  const dvDelta = summaryA.dvKms - summaryB.dvKms;
+  const massDelta = (summaryA.launchMassKg ?? 0) - (summaryB.launchMassKg ?? 0);
+  const verdictDelta = verdictRank(summaryA.verdict) - verdictRank(summaryB.verdict);
+
+  const dvLeader =
+    Math.abs(dvDelta) < 0.001
+      ? t('designer_v2.compare.same_delta_v')
+      : formatMessage('designer_v2.compare.delta_v_lead', {
+          pane: dvDelta > 0 ? 'A' : 'B',
+          amount: oneDecimalFmt.format(Math.abs(dvDelta)),
+        });
+  const massLeader =
+    Math.abs(massDelta) < 1
+      ? t('designer_v2.compare.same_mass')
+      : formatMessage('designer_v2.compare.mass_lead', {
+          pane: massDelta < 0 ? 'A' : 'B',
+          amount: numberFmt.format(Math.abs(Math.round(massDelta))),
+        });
+  const verdictLeader =
+    verdictDelta === 0
+      ? t('designer_v2.compare.same_verdict')
+      : formatMessage('designer_v2.compare.verdict_lead', {
+          pane: verdictDelta > 0 ? 'A' : 'B',
+          verdict:
+            translatedVerdict(verdictDelta > 0 ? summaryA.verdict : summaryB.verdict),
+        });
+
+  container.innerHTML = [
+    compareMetricCard(
+      t('designer_v2.summary.total_dv'),
+      `${oneDecimalFmt.format(summaryA.dvKms)} km/s`,
+      `${oneDecimalFmt.format(summaryB.dvKms)} km/s`,
+      dvLeader
+    ),
+    compareMetricCard(
+      t('designer_v2.compare.launch_mass'),
+      `${numberFmt.format(Math.round(summaryA.launchMassKg ?? 0))} kg`,
+      `${numberFmt.format(Math.round(summaryB.launchMassKg ?? 0))} kg`,
+      massLeader
+    ),
+    compareMetricCard(
+      t('designer_v2.summary.verdict'),
+      translatedVerdict(summaryA.verdict),
+      translatedVerdict(summaryB.verdict),
+      verdictLeader
+    ),
+  ].join('');
+}
+
+function handleCompareSummaryMessage(event) {
+  if (event.origin !== window.location.origin) {
+    return;
+  }
+
+  const summary = event.data?.summary;
+  if (event.data?.type !== 'designer-v2-compare-summary' || !COMPARE_PANES.includes(summary?.pane)) {
+    return;
+  }
+
+  compareState.summaries[summary.pane] = summary;
+  renderCompareSummary();
+}
+
+function setCompareMode(enabled) {
+  const single = document.getElementById('designer-v2-single');
+  const compare = document.getElementById('designer-v2-compare');
+  const paneA = document.getElementById('compare-pane-a');
+  const paneB = document.getElementById('compare-pane-b');
+  const compareToggleButton = document.getElementById('compare-mode-toggle');
+  if (!single || !compare || !paneA || !paneB) {
+    return;
+  }
+
+  compareState.enabled = enabled;
+  single.hidden = enabled;
+  compare.hidden = !enabled;
+  compareToggleButton?.setAttribute('aria-pressed', String(enabled));
+
+  if (!enabled) {
+    return;
+  }
+
+  const draft = snapshotShareDraft(state);
+  compareState.summaries.A = null;
+  compareState.summaries.B = null;
+  paneA.src = buildComparePaneUrl('A', draft);
+  paneB.src = buildComparePaneUrl('B', draft);
+  renderCompareSummary();
+}
+
 function renderSummary(result, blocked, errorMessage = '') {
   const totalDv = document.getElementById('total-dv');
   const verdictPill = document.getElementById('verdict-pill');
@@ -1937,6 +2121,7 @@ function renderSummary(result, blocked, errorMessage = '') {
     renderRocketSilhouette();
     renderMissionBar(null);
     renderVerdictExplainer(null);
+    postCompareSummary(null, true, errorMessage);
     return;
   }
 
@@ -1997,6 +2182,7 @@ function renderSummary(result, blocked, errorMessage = '') {
   renderRocketSilhouette();
   renderMissionBar(result);
   renderVerdictExplainer(result);
+  postCompareSummary(result, blocked, errorMessage);
 }
 
 function renderValidationErrors(errors) {
@@ -2329,6 +2515,7 @@ async function init() {
   if (typeof window !== 'undefined') {
     window.__analyze = analyze;
   }
+  document.body.classList.toggle('designer-v2-embed', EMBED_MODE);
 
   const addStageButton = document.getElementById('add-stage');
   const removeStageButton = document.getElementById('remove-stage');
@@ -2338,6 +2525,10 @@ async function init() {
   const form = document.getElementById('designer-v2-form');
   const analyzeButton = document.getElementById('analyze-button');
   const copyShareButton = document.getElementById('copy-share-link');
+  const compareToggleButton = document.getElementById('compare-mode-toggle');
+  const compareExitButton = document.getElementById('compare-mode-exit');
+  const comparePaneA = document.getElementById('compare-pane-a');
+  const comparePaneB = document.getElementById('compare-pane-b');
 
   if (
     !addStageButton ||
@@ -2349,6 +2540,10 @@ async function init() {
     !analyzeButton ||
     !copyShareButton
   ) {
+    return;
+  }
+
+  if (!EMBED_MODE && (!compareToggleButton || !compareExitButton || !comparePaneA || !comparePaneB)) {
     return;
   }
 
@@ -2373,6 +2568,7 @@ async function init() {
   renderCards();
   updateOutputs();
   enableDragAndDrop();
+  renderCompareSummary();
 
   if (restoredShareDraft.status === 'restored') {
     setShareStatus(t('designer_v2.controls.share_restored'));
@@ -2390,6 +2586,17 @@ async function init() {
     void handleCopyShareLink();
   });
   form.addEventListener('input', handleFormInput);
+
+  if (!EMBED_MODE) {
+    compareToggleButton.addEventListener('click', () => {
+      syncStateFromInputs();
+      setCompareMode(true);
+    });
+    compareExitButton.addEventListener('click', () => {
+      setCompareMode(false);
+    });
+    window.addEventListener('message', handleCompareSummaryMessage);
+  }
 }
 
 if (typeof document !== 'undefined') {

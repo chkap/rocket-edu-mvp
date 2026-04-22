@@ -1,3 +1,8 @@
+.designer-v2-page {
+  display: grid;
+  gap: 1rem;
+}
+
 .designer-v2-layout {
   display: grid;
   gap: 1rem;
@@ -151,6 +156,82 @@
 .designer-v2-share-status {
   margin: 0;
   min-height: 1.4rem;
+}
+
+.designer-v2-compare {
+  display: grid;
+  gap: 1rem;
+}
+
+.designer-v2-compare-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.designer-v2-compare-header h2,
+.designer-v2-compare-pane-copy h3,
+.designer-v2-compare-summary h3,
+.designer-v2-compare-header p,
+.designer-v2-compare-pane-copy p {
+  margin-top: 0;
+}
+
+.designer-v2-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.designer-v2-compare-pane,
+.designer-v2-compare-summary {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  background: var(--surface-muted);
+}
+
+.designer-v2-compare-frame {
+  width: 100%;
+  min-height: 1480px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.designer-v2-compare-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.designer-v2-compare-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.designer-v2-compare-card h4,
+.designer-v2-compare-card p,
+.designer-v2-compare-card strong {
+  margin: 0;
+}
+
+.designer-v2-compare-card h4 {
+  margin-bottom: 0.55rem;
+}
+
+.designer-v2-compare-card p + p {
+  margin-top: 0.25rem;
+}
+
+.designer-v2-compare-delta {
+  display: block;
+  margin-top: 0.65rem;
+  color: var(--accent-text);
 }
 
 .designer-v2-status {
@@ -786,6 +867,11 @@
 }
 
 @media (max-width: 720px) {
+  .designer-v2-compare-grid,
+  .designer-v2-compare-cards {
+    grid-template-columns: 1fr;
+  }
+
   .designer-v2-silhouette-panel {
     display: none;
   }
@@ -843,6 +929,10 @@
     width: 100%;
   }
 
+  .designer-v2-compare-frame {
+    min-height: 1180px;
+  }
+
   .designer-v2-card-header,
   .designer-v2-card-tools {
     align-items: stretch;
@@ -860,4 +950,23 @@
   .designer-v2-mission-markers span {
     font-size: 0.72rem;
   }
+}
+
+body.designer-v2-embed header,
+body.designer-v2-embed footer,
+body.designer-v2-embed .designer-v2-glossary-panel,
+body.designer-v2-embed #compare-mode-toggle,
+body.designer-v2-embed #designer-v2-compare,
+body.designer-v2-embed .designer-v2-toolbar-copy,
+body.designer-v2-embed .designer-v2-silhouette-panel,
+body.designer-v2-embed .designer-v2-share-status {
+  display: none !important;
+}
+
+body.designer-v2-embed .designer-v2-layout {
+  grid-template-columns: 1fr !important;
+}
+
+body.designer-v2-embed .designer-v2-summary-panel {
+  position: static;
 }
