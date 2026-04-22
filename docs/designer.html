@@ -13,33 +13,13 @@
     <script type="module" src="./designer.js"></script>
   </head>
   <body>
-    <header>
-      <h1 data-i18n="designer.hero.title"></h1>
-      <p data-i18n="designer.hero.subtitle"></p>
-
-      <nav aria-label="Primary" data-i18n="nav.primary" data-i18n-attr="aria-label">
-        <div class="nav-row">
-          <ul>
-            <li><a href="./index.html" data-i18n="nav.index"></a></li>
-            <li><a href="./designer.html" aria-current="page" data-i18n="nav.designer"></a></li>
-            <li><a href="./designer-v2.html" data-i18n="nav.designer_v2"></a></li>
-          </ul>
-          <div class="nav-controls">
-            <div class="theme-switcher">
-              <span class="theme-switcher-label" data-i18n="theme.label"></span>
-              <button type="button" class="theme-toggle" data-theme-toggle></button>
-            </div>
-            <div class="lang-switcher" data-i18n="nav.language_switcher" data-i18n-attr="aria-label">
-              <button type="button" data-set-lang="en" data-i18n="lang.english"></button>
-              <span class="lang-switcher-separator">|</span>
-              <button type="button" data-set-lang="zh" data-i18n="lang.chinese"></button>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </header>
 
     <main id="content">
+      <div class="page-hero">
+        <h1 data-i18n="designer.hero.title"></h1>
+        <p data-i18n="designer.hero.subtitle"></p>
+      </div>
+
       <section aria-labelledby="designer-intro-title">
         <h2 id="designer-intro-title" data-i18n="designer.intro.title"></h2>
         <p data-i18n="designer.intro.body"></p>

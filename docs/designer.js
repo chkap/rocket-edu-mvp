@@ -5,6 +5,7 @@ import {
   stageDeltaV,
   validateStage,
 } from './lib/rocket.js';
+import './site-header.js';
 import { formatMessage, initPage, t } from './lib/i18n.js';
 
 const MIN_STAGES = 1;

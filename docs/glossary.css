@@ -1,0 +1,115 @@
+.glossary-section {
+  grid-column: 1 / -1;
+}
+
+.glossary-search-wrapper {
+  margin-bottom: 1rem;
+}
+
+.glossary-search {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.glossary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.97rem;
+}
+
+.glossary-table thead th {
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+}
+
+.glossary-table tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.glossary-table tbody tr[hidden] {
+  display: none !important;
+}
+
+.glossary-table td {
+  padding: 0.65rem 0.75rem;
+  vertical-align: top;
+}
+
+.glossary-term-cell {
+  white-space: nowrap;
+  width: 10rem;
+}
+
+.glossary-def-cell {
+  line-height: 1.55;
+}
+
+.glossary-cat-cell {
+  width: 7rem;
+}
+
+.glossary-category-badge {
+  display: inline-block;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--surface-muted);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.glossary-cat-equation {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--accent-border);
+}
+
+.glossary-cat-orbit {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success-border);
+}
+
+.glossary-cat-performance {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+:root[data-theme='dark'] .glossary-cat-performance {
+  color: #fbbf24;
+}
+
+@media (max-width: 720px) {
+  .glossary-term-cell {
+    white-space: normal;
+    width: auto;
+  }
+
+  .glossary-cat-cell {
+    width: auto;
+  }
+
+  .glossary-table {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .glossary-table td,
+  .glossary-table th {
+    padding: 0.5rem 0.4rem;
+  }
+}
