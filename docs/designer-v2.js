@@ -1583,38 +1583,6 @@ function boosterCardMarkup(analysis) {
 
       <div class="designer-v2-field-grid">
         <div class="form-field">
-          <label>${withGlossaryTerm(t('designer_v2.field.booster_type'), 'booster')}</label>
-          <div class="designer-v2-toggle is-wide" role="radiogroup" aria-label="${t('designer_v2.field.booster_type')}">
-            <label>
-              <input type="radio" name="booster-type" value="${BOOSTER_TYPES.LIQUID}"${
-                boosters.type === BOOSTER_TYPES.LIQUID ? ' checked' : ''
-              } />
-              <span>${t('designer_v2.booster_type.liquid')}</span>
-            </label>
-            <label>
-              <input type="radio" name="booster-type" value="${BOOSTER_TYPES.SOLID}"${
-                boosters.type === BOOSTER_TYPES.SOLID ? ' checked' : ''
-              } />
-              <span>${t('designer_v2.booster_type.solid')}</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label for="booster-engine">${t('designer_v2.field.engine')}</label>
-          ${
-            boosterTypeIsSolid
-              ? `<p class="designer-v2-note">${t('designer_v2.controls.solid_booster_note')}</p>
-                 <input id="booster-engine" type="hidden" value="srb_blob" />`
-              : `<select id="booster-engine" name="booster-engine">${engineOptionsMarkup(
-                  boosters.engineKey,
-                  liquidEngines
-                )}</select>`
-          }
-          <p id="booster-engine-error" class="field-error" aria-live="polite"></p>
-        </div>
-
-        <div class="form-field">
           <label for="booster-count">${withGlossaryTerm(t('designer_v2.field.booster_count'), 'booster')}</label>
           <input
             id="booster-count"
@@ -1627,85 +1595,121 @@ function boosterCardMarkup(analysis) {
           />
           <p id="booster-count-error" class="field-error" aria-live="polite"></p>
         </div>
-
-        <div class="form-field ${boostersActive && !boosterTypeIsSolid ? '' : 'designer-v2-hidden'}">
-          <label for="booster-engine-count">${t('designer_v2.field.engine_count')}</label>
-          <input
-            id="booster-engine-count"
-            type="number"
-            inputmode="numeric"
-            min="1"
-            max="${MAX_ENGINE_COUNT}"
-            step="1"
-            value="${boosters.engineCount}"
-          />
-          <p id="booster-engine-count-error" class="field-error" aria-live="polite"></p>
-        </div>
-
-        <div class="form-field ${boostersActive && !boosterTypeIsSolid ? '' : 'designer-v2-hidden'}">
-          <label>${t('designer_v2.field.nozzle')}</label>
-          ${nozzleMarkup({ groupName: 'booster-nozzle', engine, value: boosters.nozzle })}
-        </div>
-
-        <div class="form-field ${boostersActive ? '' : 'designer-v2-hidden'}">
-          <label for="booster-propellant-number">${t('designer_v2.field.propellant_tons')}</label>
-          <div class="designer-v2-range-row">
-            <input
-              id="booster-propellant-range"
-              type="range"
-              min="${PROP_TONS_RANGE.min}"
-              max="${PROP_TONS_RANGE.max}"
-              step="${PROP_TONS_RANGE.step}"
-              value="${boosters.propellantTons}"
-            />
-            <input
-              id="booster-propellant-number"
-              type="number"
-              inputmode="decimal"
-              min="${PROP_TONS_RANGE.min}"
-              max="${PROP_TONS_RANGE.max}"
-              step="${PROP_TONS_RANGE.step}"
-              value="${boosters.propellantTons}"
-            />
-          </div>
-          <p id="booster-propellant-number-error" class="field-error" aria-live="polite"></p>
-        </div>
-
-        <div class="form-field ${boostersActive && !boosterTypeIsSolid ? '' : 'designer-v2-hidden'}">
-          <label for="booster-tank-number">${t('designer_v2.field.tank_fraction')}</label>
-          <div class="designer-v2-range-row">
-            <input
-              id="booster-tank-range"
-              type="range"
-              min="${TANK_FRACTION_RANGE.min}"
-              max="${TANK_FRACTION_RANGE.max}"
-              step="${TANK_FRACTION_RANGE.step}"
-              value="${boosters.tankFraction}"
-            />
-            <input
-              id="booster-tank-number"
-              type="number"
-              inputmode="decimal"
-              min="${TANK_FRACTION_RANGE.min}"
-              max="${TANK_FRACTION_RANGE.max}"
-              step="${TANK_FRACTION_RANGE.step}"
-              value="${boosters.tankFraction}"
-            />
-          </div>
-          <p id="booster-tank-number-error" class="field-error" aria-live="polite"></p>
-        </div>
       </div>
 
       ${
-        boostersActive
-          ? ''
-           : `<p class="designer-v2-note">${withGlossaryTerm(t('designer_v2.card.boosters_inactive'), 'booster')}</p>`
-       }
+        !boostersActive
+          ? `<p class="designer-v2-note">${withGlossaryTerm(t('designer_v2.card.boosters_inactive'), 'booster')}</p>`
+          : ''
+      }
 
-      ${engineSpotlightMarkup(engine, 'booster-engine-panel')}
+      <div class="boosters-collapsible"${boostersActive ? '' : ' hidden'}>
+        <div class="designer-v2-field-grid">
+          <div class="form-field">
+            <label>${withGlossaryTerm(t('designer_v2.field.booster_type'), 'booster')}</label>
+            <div class="designer-v2-toggle is-wide" role="radiogroup" aria-label="${t('designer_v2.field.booster_type')}">
+              <label>
+                <input type="radio" name="booster-type" value="${BOOSTER_TYPES.LIQUID}"${
+                  boosters.type === BOOSTER_TYPES.LIQUID ? ' checked' : ''
+                } />
+                <span>${t('designer_v2.booster_type.liquid')}</span>
+              </label>
+              <label>
+                <input type="radio" name="booster-type" value="${BOOSTER_TYPES.SOLID}"${
+                  boosters.type === BOOSTER_TYPES.SOLID ? ' checked' : ''
+                } />
+                <span>${t('designer_v2.booster_type.solid')}</span>
+              </label>
+            </div>
+          </div>
 
-      <div id="booster-metrics" class="designer-v2-metrics" aria-live="polite">
-        ${stageMetricsMarkup(boosterSummary)}
+          <div class="form-field">
+            <label for="booster-engine">${t('designer_v2.field.engine')}</label>
+            ${
+              boosterTypeIsSolid
+                ? `<p class="designer-v2-note">${t('designer_v2.controls.solid_booster_note')}</p>
+                   <input id="booster-engine" type="hidden" value="srb_blob" />`
+                : `<select id="booster-engine" name="booster-engine">${engineOptionsMarkup(
+                    boosters.engineKey,
+                    liquidEngines
+                  )}</select>`
+            }
+            <p id="booster-engine-error" class="field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label for="booster-engine-count">${t('designer_v2.field.engine_count')}</label>
+            <input
+              id="booster-engine-count"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max="${MAX_ENGINE_COUNT}"
+              step="1"
+              value="${boosters.engineCount}"
+            />
+            <p id="booster-engine-count-error" class="field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label>${t('designer_v2.field.nozzle')}</label>
+            ${nozzleMarkup({ groupName: 'booster-nozzle', engine, value: boosters.nozzle })}
+          </div>
+
+          <div class="form-field">
+            <label for="booster-propellant-number">${t('designer_v2.field.propellant_tons')}</label>
+            <div class="designer-v2-range-row">
+              <input
+                id="booster-propellant-range"
+                type="range"
+                min="${PROP_TONS_RANGE.min}"
+                max="${PROP_TONS_RANGE.max}"
+                step="${PROP_TONS_RANGE.step}"
+                value="${boosters.propellantTons}"
+              />
+              <input
+                id="booster-propellant-number"
+                type="number"
+                inputmode="decimal"
+                min="${PROP_TONS_RANGE.min}"
+                max="${PROP_TONS_RANGE.max}"
+                step="${PROP_TONS_RANGE.step}"
+                value="${boosters.propellantTons}"
+              />
+            </div>
+            <p id="booster-propellant-number-error" class="field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field ${boosterTypeIsSolid ? 'designer-v2-hidden' : ''}">
+            <label for="booster-tank-number">${t('designer_v2.field.tank_fraction')}</label>
+            <div class="designer-v2-range-row">
+              <input
+                id="booster-tank-range"
+                type="range"
+                min="${TANK_FRACTION_RANGE.min}"
+                max="${TANK_FRACTION_RANGE.max}"
+                step="${TANK_FRACTION_RANGE.step}"
+                value="${boosters.tankFraction}"
+              />
+              <input
+                id="booster-tank-number"
+                type="number"
+                inputmode="decimal"
+                min="${TANK_FRACTION_RANGE.min}"
+                max="${TANK_FRACTION_RANGE.max}"
+                step="${TANK_FRACTION_RANGE.step}"
+                value="${boosters.tankFraction}"
+              />
+            </div>
+            <p id="booster-tank-number-error" class="field-error" aria-live="polite"></p>
+          </div>
+        </div>
+
+        ${engineSpotlightMarkup(engine, 'booster-engine-panel')}
+
+        <div id="booster-metrics" class="designer-v2-metrics" aria-live="polite">
+          ${stageMetricsMarkup(boosterSummary)}
+        </div>
       </div>
     </article>
   `;
@@ -2372,6 +2376,11 @@ function handleFormInput(event) {
     syncStateFromInputs();
     resetBoosterType(target.value);
     state.presetId = 'custom';
+    renderCards();
+  }
+
+  if (target.id === 'booster-count') {
+    syncStateFromInputs();
     renderCards();
   }
 
