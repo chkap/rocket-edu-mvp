@@ -1662,11 +1662,28 @@ function renderMissionBar(result) {
     const percent = missionProgressPercent(marker.thresholdKmS);
     const isHit = (result?.total?.dv_kms ?? 0) >= marker.thresholdKmS;
     const isTarget = result?.total?.target_orbit_altitude_km === marker.altitudeKm;
+    const classes = [isHit ? 'is-hit' : '', isTarget ? 'is-target' : ''].filter(Boolean).join(' ');
+    const thresholdLabel = `${oneDecimalFmt.format(marker.thresholdKmS)} km/s`;
 
     return `
-      <li style="left:${percent}%" class="${isHit ? 'is-hit' : ''} ${isTarget ? 'is-target' : ''}">
+      <li style="left:${percent}%" class="${classes}" data-mission-marker-id="${marker.id}">
         <strong>${marker.badge}</strong>
-        <span>${t(marker.labelKey)}</span>
+      </li>
+    `;
+  }).join('');
+
+  const legendItems = MISSION_MARKERS.map((marker) => {
+    const isHit = (result?.total?.dv_kms ?? 0) >= marker.thresholdKmS;
+    const isTarget = result?.total?.target_orbit_altitude_km === marker.altitudeKm;
+    const classes = [isHit ? 'is-hit' : '', isTarget ? 'is-target' : ''].filter(Boolean).join(' ');
+
+    return `
+      <li class="${classes}" data-mission-legend-id="${marker.id}">
+        <span class="designer-v2-mission-legend-badge" aria-hidden="true">${marker.badge}</span>
+        <span class="designer-v2-mission-legend-copy">
+          <strong>${t(marker.labelKey)}</strong>
+          <span>${oneDecimalFmt.format(marker.thresholdKmS)} km/s</span>
+        </span>
       </li>
     `;
   }).join('');
@@ -1675,8 +1692,9 @@ function renderMissionBar(result) {
     <div class="designer-v2-mission-track">
       <div class="designer-v2-mission-fill"></div>
       <span class="designer-v2-mission-current" aria-hidden="true"></span>
+      <ol class="designer-v2-mission-badges" aria-hidden="true">${markers}</ol>
     </div>
-    <ol class="designer-v2-mission-markers">${markers}</ol>
+    <ol class="designer-v2-mission-legend">${legendItems}</ol>
   `;
 }
 

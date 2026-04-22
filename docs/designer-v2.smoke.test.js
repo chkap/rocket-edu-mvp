@@ -169,6 +169,7 @@ describe('designer-v2 smoke flow', () => {
       expect(document.getElementById('target-orbit-altitude')?.value).toBe('35786');
       expect(document.getElementById('mission-target')?.textContent).toContain('Target missed');
       expect(document.getElementById('mission-target')?.textContent).toContain('13.3');
+      expect(document.querySelector('[data-mission-legend-id="geo"]')?.classList.contains('is-target')).toBe(true);
     });
 
     altitudeInput.value = '2000';
@@ -177,6 +178,12 @@ describe('designer-v2 smoke flow', () => {
     await waitFor(() => {
       expect(document.getElementById('mission-target-preview')?.textContent).toContain('10.3');
     });
+
+    const missionLegend = document.querySelectorAll('[data-mission-legend-id]');
+    expect(missionLegend).toHaveLength(4);
+    expect(document.querySelector('[data-mission-legend-id="geo"]')?.textContent).toContain('GEO');
+    expect(document.querySelector('[data-mission-legend-id="geo"]')?.textContent).toContain('13.3');
+    expect(document.querySelector('[data-mission-legend-id="meo"]')?.classList.contains('is-target')).toBe(true);
   });
 
   it('shows a live why-this-verdict budget with stage rows, gravity loss, and the target requirement', async () => {
