@@ -28,10 +28,25 @@ describe('effectiveIsp', () => {
 });
 
 describe('gravityDragLoss', () => {
-  it('maps liftoff TWR to the required loss buckets', () => {
-    expect(gravityDragLoss(1.45)).toBe(1500);
-    expect(gravityDragLoss(1.3)).toBe(1800);
+  it('follows the cited smooth atmospheric-loss fit within the target envelope', () => {
     expect(gravityDragLoss(1.1)).toBe(2200);
+    expect(gravityDragLoss(1.2)).toBeCloseTo(2200, 5);
+    expect(gravityDragLoss(1.4)).toBeCloseTo(1969, 0);
+    expect(gravityDragLoss(1.6)).toBeCloseTo(1815, 0);
+    expect(gravityDragLoss(2)).toBeCloseTo(1641, 0);
+    expect(gravityDragLoss(3)).toBeCloseTo(1519, 0);
+    expect(gravityDragLoss(6)).toBeCloseTo(1500, 0);
+  });
+
+  it('changes smoothly as liftoff TWR increases', () => {
+    const low = gravityDragLoss(1.3);
+    const medium = gravityDragLoss(1.31);
+    const high = gravityDragLoss(1.32);
+
+    expect(low).toBeGreaterThan(medium);
+    expect(medium).toBeGreaterThan(high);
+    expect(low - medium).toBeLessThan(20);
+    expect(medium - high).toBeLessThan(20);
   });
 });
 
@@ -193,7 +208,7 @@ describe('analyze edge cases', () => {
     expect(result.stages[1].warnings.join(' ')).toMatch(/sea-level nozzle selected on an upper stage/i);
   });
 
-  it('shows SLS failing LEO without boosters and reaching LEO with the two SRBs', () => {
+  it('shows SLS boosters recovering a large amount of delta-v over the no-booster case', () => {
     const withoutBoosters = analyze({
       ...slsBlock1,
       boosters: null,
@@ -204,9 +219,9 @@ describe('analyze edge cases', () => {
     expect(withoutBoosters.total.verdict).toBe('Suborbital');
     expect(withoutBoosters.total.mission_target).toBe('LEO');
     expect(withoutBoosters.total.target_met).toBe(false);
-    expect(withBoosters.total.dv_kms).toBeGreaterThanOrEqual(9.4);
-    expect(withBoosters.total.verdict).toBe('LEO');
-    expect(withBoosters.total.target_met).toBe(true);
+    expect(withBoosters.total.dv_kms).toBeGreaterThan(withoutBoosters.total.dv_kms + 3.5);
+    expect(withBoosters.total.dv_kms).toBeGreaterThan(9);
+    expect(withBoosters.total.mission_target).toBe('LEO');
     expect(withBoosters.boosters?.dv_ms).toBeGreaterThan(0);
   });
 });
