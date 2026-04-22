@@ -11,7 +11,6 @@
 @media (min-width: 1080px) {
   .designer-v2-layout {
     grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 0.95fr);
-    align-items: start;
   }
 }
 
@@ -587,9 +586,11 @@
 }
 
 @media (min-width: 1080px) {
-  .designer-v2-summary-panel {
+  .designer-v2-sidebar {
     position: sticky;
     top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
   }
 }
 
