@@ -171,4 +171,35 @@ describe('designer-v2 smoke flow', () => {
       expect(document.getElementById('mission-target-preview')?.textContent).toContain('10.3');
     });
   });
+
+  it('shows a live why-this-verdict budget with stage rows, gravity loss, and the target requirement', async () => {
+    await loadDesignerV2Page();
+
+    const presetSelect = document.getElementById('preset-select');
+    const explainer = document.getElementById('verdict-explainer');
+    const altitudeInput = document.getElementById('target-orbit-altitude');
+
+    expect(presetSelect).not.toBeNull();
+    expect(explainer).not.toBeNull();
+    expect(altitudeInput).not.toBeNull();
+
+    presetSelect.value = 'falcon9';
+    presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(explainer.hidden).toBe(false);
+      expect(explainer.querySelectorAll('[data-budget-kind="stage"]').length).toBe(2);
+      expect(explainer.querySelectorAll('[data-budget-kind="loss"]').length).toBeGreaterThanOrEqual(1);
+      expect(explainer.querySelector('[data-budget-kind="requirement"]')?.textContent).toContain('9.4');
+      expect(explainer.textContent).toContain('Margin');
+    });
+
+    altitudeInput.value = '35786';
+    altitudeInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(explainer.querySelector('[data-budget-kind="requirement"]')?.textContent).toContain('13.3');
+      expect(explainer.textContent).toContain('Shortfall');
+    });
+  });
 });

@@ -1209,6 +1209,121 @@ function renderMissionBar(result) {
   `;
 }
 
+function buildVerdictBudget(result) {
+  if (!result) {
+    return null;
+  }
+
+  const rows = result.stages.map((stage) => ({
+    kind: 'stage',
+    label: stage.label,
+    valueKmS: stage.dv_ms / 1000,
+  }));
+
+  result.stages.forEach((stage) => {
+    if ((stage.gravity_drag_loss_ms ?? 0) <= 0) {
+      return;
+    }
+
+    rows.push({
+      kind: 'loss',
+      label: formatMessage('designer_v2.summary.explainer_gravity_loss', {
+        label: stage.label,
+      }),
+      valueKmS: stage.gravity_drag_loss_ms / 1000,
+    });
+  });
+
+  const requirementKmS = Number.isFinite(result.total.target_requirement_kms)
+    ? result.total.target_requirement_kms
+    : result.total.dv_kms;
+  const requirementLabel =
+    Number.isFinite(result.total.target_orbit_altitude_km) && Number.isFinite(result.total.target_requirement_kms)
+      ? formatMessage('designer_v2.summary.explainer_requirement_target', {
+          target: formatTargetOrbitLabel(result.total.target_orbit_altitude_km),
+        })
+      : t('designer_v2.summary.explainer_requirement_generic');
+
+  rows.push({
+    kind: 'requirement',
+    label: requirementLabel,
+    valueKmS: requirementKmS,
+  });
+
+  const scaleKmS = Math.max(
+    requirementKmS,
+    result.total.dv_kms,
+    ...rows.map((row) => row.valueKmS),
+    1
+  );
+
+  return {
+    rows,
+    scaleKmS,
+    requirementKmS,
+    deliveredKmS: result.total.dv_kms,
+    deltaKmS: result.total.dv_kms - requirementKmS,
+  };
+}
+
+function renderVerdictExplainer(result) {
+  const details = document.getElementById('verdict-explainer');
+  const body = document.getElementById('verdict-explainer-body');
+  if (!details || !body) {
+    return;
+  }
+
+  if (!result) {
+    details.hidden = true;
+    body.innerHTML = '';
+    return;
+  }
+
+  const budget = buildVerdictBudget(result);
+  if (!budget) {
+    details.hidden = true;
+    body.innerHTML = '';
+    return;
+  }
+
+  details.hidden = false;
+
+  const summaryCopy = formatMessage(
+    budget.deltaKmS >= 0
+      ? 'designer_v2.summary.explainer_margin'
+      : 'designer_v2.summary.explainer_shortfall',
+    {
+      delivered: oneDecimalFmt.format(budget.deliveredKmS),
+      requirement: oneDecimalFmt.format(budget.requirementKmS),
+      difference: oneDecimalFmt.format(Math.abs(budget.deltaKmS)),
+    }
+  );
+
+  const rowsMarkup = budget.rows
+    .map((row) => {
+      const widthPercent = Math.min((row.valueKmS / budget.scaleKmS) * 100, 100);
+      const formattedValue = `${row.kind === 'loss' ? '−' : ''}${oneDecimalFmt.format(row.valueKmS)} km/s`;
+
+      return `
+        <div class="designer-v2-budget-row is-${row.kind}" data-budget-kind="${row.kind}">
+          <div class="designer-v2-budget-meta">
+            <span>${row.label}</span>
+            <strong>${formattedValue}</strong>
+          </div>
+          <div class="designer-v2-budget-track">
+            <span class="designer-v2-budget-bar" style="width:${widthPercent}%"></span>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  body.innerHTML = `
+    <p class="designer-v2-explainer-copy">${summaryCopy}</p>
+    <div class="designer-v2-budget-list">${rowsMarkup}</div>
+  `;
+}
+
 function renderSummary(result, blocked, errorMessage = '') {
   const totalDv = document.getElementById('total-dv');
   const verdictPill = document.getElementById('verdict-pill');
@@ -1245,6 +1360,7 @@ function renderSummary(result, blocked, errorMessage = '') {
     summaryStatus.textContent = errorMessage || t('designer_v2.summary.invalid');
     analyzeButton.disabled = true;
     renderMissionBar(null);
+    renderVerdictExplainer(null);
     return;
   }
 
@@ -1303,6 +1419,7 @@ function renderSummary(result, blocked, errorMessage = '') {
     : t('designer_v2.summary.ready');
   analyzeButton.disabled = blocked;
   renderMissionBar(result);
+  renderVerdictExplainer(result);
 }
 
 function renderValidationErrors(errors) {
