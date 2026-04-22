@@ -46,6 +46,24 @@ describe('designer-v2 helpers', () => {
     expect(result.total.dv_kms).toBeGreaterThan(9);
   });
 
+  it('loads Falcon 9, Saturn V, and Long March 5 as distinct analyze-ready presets', () => {
+    const falcon = buildAnalyzeConfig(loadDraftFromPreset('falcon9', catalog.engines));
+    const saturn = buildAnalyzeConfig(loadDraftFromPreset('saturnV', catalog.engines));
+    const longMarch = buildAnalyzeConfig(loadDraftFromPreset('longMarch5', catalog.engines));
+
+    expect(falcon.stages).toHaveLength(2);
+    expect(falcon.boosters).toBeNull();
+    expect(falcon.missionTarget).toBe('LEO');
+
+    expect(saturn.stages).toHaveLength(3);
+    expect(saturn.boosters).toBeNull();
+    expect(saturn.missionTarget).toBe('TLI');
+
+    expect(longMarch.stages).toHaveLength(2);
+    expect(longMarch.boosters?.count).toBe(4);
+    expect(longMarch.missionTarget).toBe('LEO');
+  });
+
   it('keeps the dedicated booster card inactive at count 0', () => {
     const draft = loadDraftFromPreset('custom', catalog.engines);
     const config = buildAnalyzeConfig(draft);

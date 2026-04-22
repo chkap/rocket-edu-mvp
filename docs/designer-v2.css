@@ -36,6 +36,35 @@
   min-width: min(100%, 18rem);
 }
 
+.designer-v2-preset-copy {
+  margin: 0;
+}
+
+.designer-v2-preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.designer-v2-preset-chip {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.designer-v2-preset-chip:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.designer-v2-preset-chip.is-active {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
 .designer-v2-button-row {
   display: flex;
   flex-wrap: wrap;

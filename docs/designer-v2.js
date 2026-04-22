@@ -35,12 +35,15 @@ const VERDICT_KEY_MAP = {
   'Lunar landing': 'designer_v2.verdict.lunar_landing',
 };
 
+const PRESET_SOURCE_URL = 'https://github.com/chkap/rocket-edu-mvp/issues/34#issuecomment-4289942063';
+
 const PRESET_OPTIONS = [
   { id: 'custom', labelKey: 'designer_v2.preset.custom', preset: null },
   {
     id: 'falcon9',
     labelKey: 'designer_v2.preset.falcon9',
     preset: PRESETS.falcon9,
+    featured: true,
     stageNameKeys: [
       'designer_v2.preset.falcon9.stage_1',
       'designer_v2.preset.falcon9.stage_2',
@@ -50,6 +53,7 @@ const PRESET_OPTIONS = [
     id: 'saturnV',
     labelKey: 'designer_v2.preset.saturn_v',
     preset: PRESETS.saturnV,
+    featured: true,
     stageNameKeys: [
       'designer_v2.preset.saturn_v.stage_1',
       'designer_v2.preset.saturn_v.stage_2',
@@ -70,6 +74,7 @@ const PRESET_OPTIONS = [
     id: 'longMarch5',
     labelKey: 'designer_v2.preset.long_march_5',
     preset: PRESETS.longMarch5,
+    featured: true,
     stageNameKeys: [
       'designer_v2.preset.long_march_5.stage_1',
       'designer_v2.preset.long_march_5.stage_2',
@@ -118,6 +123,51 @@ function editableNumber(value, digits = 2) {
 
 function getPresetOption(id) {
   return PRESET_OPTIONS.find((option) => option.id === id) ?? PRESET_OPTIONS[0];
+}
+
+function renderPresetControls() {
+  const presetSelect = document.getElementById('preset-select');
+  if (presetSelect) {
+    presetSelect.innerHTML = PRESET_OPTIONS.map(
+      (option) =>
+        `<option value="${option.id}"${option.id === state.presetId ? ' selected' : ''}>${t(
+          option.labelKey
+        )}</option>`
+    ).join('');
+  }
+
+  const quickLoad = document.getElementById('preset-quick-load');
+  if (quickLoad) {
+    quickLoad.innerHTML = PRESET_OPTIONS.filter((option) => option.featured)
+      .map((option) => {
+        const activeClass = option.id === state.presetId ? ' is-active' : '';
+        return `<button type="button" class="designer-v2-preset-chip${activeClass}" data-preset-load="${option.id}">${t(
+          option.labelKey
+        )}</button>`;
+      })
+      .join('');
+  }
+
+  const presetSource = document.getElementById('preset-source');
+  if (!presetSource) {
+    return;
+  }
+
+  const activePreset = getPresetOption(state.presetId);
+  if (!activePreset.preset) {
+    presetSource.textContent = t('designer_v2.controls.preset_source_custom');
+    return;
+  }
+
+  presetSource.textContent = `${t('designer_v2.controls.preset_source_prefix')} ${t(
+    activePreset.labelKey
+  )} · `;
+  const sourceLink = document.createElement('a');
+  sourceLink.href = PRESET_SOURCE_URL;
+  sourceLink.target = '_blank';
+  sourceLink.rel = 'noreferrer';
+  sourceLink.textContent = t('designer_v2.controls.preset_source_link');
+  presetSource.append(sourceLink);
 }
 
 function getEngineMap(engines = state.engines) {
@@ -987,12 +1037,7 @@ function renderCards(result = null) {
     return;
   }
 
-  presetSelect.innerHTML = PRESET_OPTIONS.map(
-    (option) =>
-      `<option value="${option.id}"${option.id === state.presetId ? ' selected' : ''}>${t(
-        option.labelKey
-      )}</option>`
-  ).join('');
+  renderPresetControls();
 
   stageList.innerHTML = state.stages.map((stage, index) => stageCardMarkup(stage, index, result)).join('');
   boosterSlot.innerHTML = boosterCardMarkup(result);
@@ -1273,6 +1318,15 @@ function loadPreset(presetId) {
   updateOutputs();
 }
 
+function markDraftAsCustom() {
+  if (state.presetId === 'custom') {
+    return;
+  }
+
+  state.presetId = 'custom';
+  renderPresetControls();
+}
+
 function handleFormInput(event) {
   const target = event.target;
   if (!(target instanceof HTMLElement)) {
@@ -1293,6 +1347,16 @@ function handleFormInput(event) {
 
   if (target.id.endsWith('-tank-number')) {
     setPairedValue(target.id.replace('-number', '-range'), target.value);
+  }
+
+  const shouldMarkCustom =
+    target.matches('input, select') &&
+    !target.id.match(/^stage-\d+-engine$/) &&
+    target.id !== 'booster-engine' &&
+    target.getAttribute('name') !== 'booster-type';
+
+  if (shouldMarkCustom) {
+    markDraftAsCustom();
   }
 
   if (target.id.match(/^stage-\d+-engine$/)) {
@@ -1322,6 +1386,15 @@ function handleFormInput(event) {
 
 function handlePresetChange(event) {
   loadPreset(event.target.value);
+}
+
+function handlePresetQuickLoadClick(event) {
+  const button = event.target.closest('[data-preset-load]');
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  loadPreset(button.getAttribute('data-preset-load'));
 }
 
 function handleAnalyzeClick() {
@@ -1433,6 +1506,7 @@ async function init() {
   const addStageButton = document.getElementById('add-stage');
   const removeStageButton = document.getElementById('remove-stage');
   const presetSelect = document.getElementById('preset-select');
+  const presetQuickLoad = document.getElementById('preset-quick-load');
   const form = document.getElementById('designer-v2-form');
   const analyzeButton = document.getElementById('analyze-button');
 
@@ -1440,6 +1514,7 @@ async function init() {
     !addStageButton ||
     !removeStageButton ||
     !presetSelect ||
+    !presetQuickLoad ||
     !form ||
     !analyzeButton
   ) {
@@ -1465,6 +1540,7 @@ async function init() {
   addStageButton.addEventListener('click', addStage);
   removeStageButton.addEventListener('click', removeStage);
   presetSelect.addEventListener('change', handlePresetChange);
+  presetQuickLoad.addEventListener('click', handlePresetQuickLoadClick);
   analyzeButton.addEventListener('click', handleAnalyzeClick);
   form.addEventListener('input', handleFormInput);
 }
