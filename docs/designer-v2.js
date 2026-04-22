@@ -2097,7 +2097,7 @@ function renderSummary(result, blocked, errorMessage = '') {
           ? 'is-lunar'
           : '';
 
-  totalDv.textContent = `${oneDecimalFmt.format(result.total.dv_kms)} km/s`;
+  totalDv.innerHTML = `${escapeHtml(oneDecimalFmt.format(result.total.dv_kms))}<span class="designer-v2-total-unit">\u2009km/s</span>`;
   verdictPill.innerHTML = glossaryInlineMarkup(
     verdictGlossaryId(result.total.verdict),
     translatedVerdict(result.total.verdict)

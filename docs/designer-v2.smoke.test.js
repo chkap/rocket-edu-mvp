@@ -107,6 +107,11 @@ describe('designer-v2 smoke flow', () => {
 
     expect(totalDv).toBeGreaterThanOrEqual(9.4);
     expect(totalDv).toBeLessThanOrEqual(9.6);
+
+    const totalDvEl = document.getElementById('total-dv');
+    const unitSpan = totalDvEl?.querySelector('.designer-v2-total-unit');
+    expect(unitSpan).not.toBeNull();
+    expect(unitSpan?.textContent).toContain('km/s');
   });
 
   it('quick-loads named presets and switches back to Custom after edits', async () => {
