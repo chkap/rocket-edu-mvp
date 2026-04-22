@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   analyze,
+  BASELINE_ORBIT_ALTITUDE_KM,
   dryMass,
   effectiveIsp,
   g0,
   gravityDragLoss,
+  targetOrbitRequirementKmS,
   upperStageGravityLoss,
   verdict,
 } from './physics.js';
@@ -67,6 +69,18 @@ describe('upperStageGravityLoss', () => {
     expect(upperStageGravityLoss(1.2)).toBeCloseTo(67.5, 5);
     expect(upperStageGravityLoss(2)).toBeCloseTo(52.5, 5);
     expect(upperStageGravityLoss(3)).toBe(50);
+  });
+});
+
+describe('targetOrbitRequirementKmS', () => {
+  it('keeps the 200 km orbit requirement aligned with the current LEO floor', () => {
+    expect(targetOrbitRequirementKmS(BASELINE_ORBIT_ALTITUDE_KM)).toBeCloseTo(9.4, 5);
+  });
+
+  it('increases as the chosen circular orbit altitude rises', () => {
+    expect(targetOrbitRequirementKmS(400)).toBeGreaterThan(targetOrbitRequirementKmS(200));
+    expect(targetOrbitRequirementKmS(2000)).toBeGreaterThan(targetOrbitRequirementKmS(400));
+    expect(targetOrbitRequirementKmS(35786)).toBeCloseTo(13.332, 3);
   });
 });
 

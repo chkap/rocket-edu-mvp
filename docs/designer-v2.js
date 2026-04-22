@@ -1,4 +1,8 @@
-import { analyze } from './lib/designer_v2/physics.js';
+import {
+  analyze,
+  BASELINE_ORBIT_ALTITUDE_KM,
+  targetOrbitRequirementKmS,
+} from './lib/designer_v2/physics.js';
 import { PRESETS } from './lib/designer_v2/presets.js';
 import { formatMessage, initPage, t } from './lib/i18n.js';
 
@@ -6,6 +10,7 @@ const MAX_STAGES = 4;
 const MIN_STAGES = 1;
 const MAX_BOOSTERS = 6;
 const MAX_ENGINE_COUNT = 9;
+const ORBIT_ALTITUDE_RANGE = { min: BASELINE_ORBIT_ALTITUDE_KM, max: 100000, step: 10 };
 const PROP_TONS_RANGE = { min: 1, max: 4000, step: 1 };
 const TANK_FRACTION_RANGE = { min: 0.04, max: 0.18, step: 0.01 };
 const DEFAULT_TANK_FRACTIONS = {
@@ -19,12 +24,14 @@ const BOOSTER_TYPES = {
 };
 
 export const MISSION_MARKERS = [
-  { labelKey: 'designer_v2.mission.leo', thresholdKmS: 9.4, mission: 'LEO' },
-  { labelKey: 'designer_v2.mission.gto', thresholdKmS: 11.8, mission: 'GTO' },
-  { labelKey: 'designer_v2.mission.tli', thresholdKmS: 12.4, mission: 'TLI' },
-  { labelKey: 'designer_v2.mission.mars', thresholdKmS: 13.5, mission: 'Mars' },
-  { labelKey: 'designer_v2.mission.lunar', thresholdKmS: 15.8, mission: 'Lunar landing' },
-];
+  { id: 'leo', labelKey: 'designer_v2.target.leo', altitudeKm: 200, badge: 'L' },
+  { id: 'iss', labelKey: 'designer_v2.target.iss', altitudeKm: 400, badge: 'I' },
+  { id: 'meo', labelKey: 'designer_v2.target.meo', altitudeKm: 2000, badge: 'M' },
+  { id: 'geo', labelKey: 'designer_v2.target.geo', altitudeKm: 35786, badge: 'G' },
+].map((marker) => ({
+  ...marker,
+  thresholdKmS: targetOrbitRequirementKmS(marker.altitudeKm),
+}));
 
 const VERDICT_KEY_MAP = {
   Suborbital: 'designer_v2.verdict.suborbital',
@@ -105,6 +112,7 @@ const ratioFmt = new Intl.NumberFormat(undefined, {
 const state = {
   engines: [],
   presetId: 'custom',
+  targetOrbitAltitudeKm: editableNumber(BASELINE_ORBIT_ALTITUDE_KM, 0),
   payloadMassKg: '1000',
   stages: [],
   boosters: null,
@@ -123,6 +131,21 @@ function editableNumber(value, digits = 2) {
 
 function getPresetOption(id) {
   return PRESET_OPTIONS.find((option) => option.id === id) ?? PRESET_OPTIONS[0];
+}
+
+function getMissionMarkerByAltitude(altitudeKm) {
+  return MISSION_MARKERS.find((marker) => marker.altitudeKm === Number(altitudeKm)) ?? null;
+}
+
+function formatTargetOrbitLabel(altitudeKm) {
+  const marker = getMissionMarkerByAltitude(altitudeKm);
+  if (marker) {
+    return t(marker.labelKey);
+  }
+
+  return formatMessage('designer_v2.summary.target_custom_altitude', {
+    altitude: numberFmt.format(altitudeKm),
+  });
 }
 
 function renderPresetControls() {
@@ -168,6 +191,43 @@ function renderPresetControls() {
   sourceLink.rel = 'noreferrer';
   sourceLink.textContent = t('designer_v2.controls.preset_source_link');
   presetSource.append(sourceLink);
+}
+
+function renderMissionControls() {
+  const targetOrbitInput = document.getElementById('target-orbit-altitude');
+  if (targetOrbitInput) {
+    targetOrbitInput.value = state.targetOrbitAltitudeKm;
+  }
+
+  const missionQuickPicks = document.getElementById('mission-quick-picks');
+  const activeMarker = getMissionMarkerByAltitude(state.targetOrbitAltitudeKm);
+  if (missionQuickPicks) {
+    missionQuickPicks.innerHTML = MISSION_MARKERS.map((marker) => {
+      const activeClass = marker.id === activeMarker?.id ? ' is-active' : '';
+      return `<button type="button" class="designer-v2-mission-chip${activeClass}" data-target-altitude="${marker.altitudeKm}">${t(
+        marker.labelKey
+      )}</button>`;
+    }).join('');
+  }
+
+  const preview = document.getElementById('mission-target-preview');
+  const altitudeKm = Number(state.targetOrbitAltitudeKm);
+  if (
+    !preview ||
+    !Number.isFinite(altitudeKm) ||
+    altitudeKm < ORBIT_ALTITUDE_RANGE.min ||
+    altitudeKm > ORBIT_ALTITUDE_RANGE.max
+  ) {
+    if (preview) {
+      preview.textContent = '';
+    }
+    return;
+  }
+
+  preview.textContent = formatMessage('designer_v2.controls.target_orbit_preview', {
+    target: formatTargetOrbitLabel(altitudeKm),
+    requirement: oneDecimalFmt.format(targetOrbitRequirementKmS(altitudeKm)),
+  });
 }
 
 function getEngineMap(engines = state.engines) {
@@ -297,6 +357,7 @@ export function loadDraftFromPreset(presetId, engines) {
   if (!option.preset) {
     return {
       presetId: 'custom',
+      targetOrbitAltitudeKm: editableNumber(BASELINE_ORBIT_ALTITUDE_KM, 0),
       payloadMassKg: '1000',
       stages: [buildStageDraft(engines, {}, 0, 1)],
       boosters: buildBoosterDraft(engines, { count: 0, type: BOOSTER_TYPES.SOLID }),
@@ -317,15 +378,16 @@ export function loadDraftFromPreset(presetId, engines) {
 
   return {
     presetId: option.id,
+    targetOrbitAltitudeKm: editableNumber(BASELINE_ORBIT_ALTITUDE_KM, 0),
     payloadMassKg: editableNumber(option.preset.payloadMassKg, 0),
     stages,
-      boosters: option.preset.boosters
-        ? buildBoosterDraft(engines, {
-            ...option.preset.boosters,
-            nameKey: option.boosterNameKey ?? null,
-          })
-        : buildBoosterDraft(engines, { count: 0, type: BOOSTER_TYPES.SOLID }),
-    };
+    boosters: option.preset.boosters
+      ? buildBoosterDraft(engines, {
+          ...option.preset.boosters,
+          nameKey: option.boosterNameKey ?? null,
+        })
+      : buildBoosterDraft(engines, { count: 0, type: BOOSTER_TYPES.SOLID }),
+  };
 }
 
 export function reorderUpperStages(stages, fromIndex, toIndex) {
@@ -347,6 +409,8 @@ export function reorderUpperStages(stages, fromIndex, toIndex) {
 
 function applyDraft(draft) {
   state.presetId = draft.presetId;
+  state.targetOrbitAltitudeKm =
+    draft.targetOrbitAltitudeKm ?? editableNumber(BASELINE_ORBIT_ALTITUDE_KM, 0);
   state.payloadMassKg = draft.payloadMassKg;
   state.stages = draft.stages;
   state.boosters = draft.boosters ?? buildBoosterDraft(state.engines, { count: 0, type: BOOSTER_TYPES.SOLID });
@@ -356,6 +420,11 @@ function syncStateFromInputs() {
   const presetSelect = document.getElementById('preset-select');
   if (presetSelect) {
     state.presetId = presetSelect.value;
+  }
+
+  const targetOrbitInput = document.getElementById('target-orbit-altitude');
+  if (targetOrbitInput) {
+    state.targetOrbitAltitudeKm = targetOrbitInput.value;
   }
 
   const payloadInput = document.getElementById('payload-mass');
@@ -488,6 +557,7 @@ export function buildAnalyzeConfig(draft = state) {
   return {
     payloadMassKg: Number(draft.payloadMassKg),
     missionTarget: option.preset?.missionTarget ?? null,
+    targetOrbitAltitudeKm: Number(draft.targetOrbitAltitudeKm),
     stages: draft.stages.map((stage, index, stages) => buildStageConfig(stage, index, stages.length)),
     boosters:
       boostersActive
@@ -522,6 +592,17 @@ function parseDraft() {
       max: 500000,
       label: t('designer.field.payload'),
       inputId: 'payload-mass',
+    },
+    errors
+  );
+  const targetOrbitAltitudeKm = readNumber(
+    state.targetOrbitAltitudeKm,
+    {
+      min: ORBIT_ALTITUDE_RANGE.min,
+      max: ORBIT_ALTITUDE_RANGE.max,
+      integer: true,
+      label: t('designer_v2.field.target_orbit_altitude'),
+      inputId: 'target-orbit-altitude',
     },
     errors
   );
@@ -631,13 +712,14 @@ function parseDraft() {
     }
   }
 
-  if (errors.length > 0 || payloadMassKg === null) {
+  if (errors.length > 0 || payloadMassKg === null || targetOrbitAltitudeKm === null) {
     return { errors, config: null, result: null };
   }
 
   try {
     const config = buildAnalyzeConfig({
       ...state,
+      targetOrbitAltitudeKm: String(targetOrbitAltitudeKm),
       payloadMassKg: String(payloadMassKg),
     });
     return { errors, config, result: analyze(config) };
@@ -1038,6 +1120,7 @@ function renderCards(result = null) {
   }
 
   renderPresetControls();
+  renderMissionControls();
 
   stageList.innerHTML = state.stages.map((stage, index) => stageCardMarkup(stage, index, result)).join('');
   boosterSlot.innerHTML = boosterCardMarkup(result);
@@ -1107,11 +1190,11 @@ function renderMissionBar(result) {
   const markers = MISSION_MARKERS.map((marker) => {
     const percent = missionProgressPercent(marker.thresholdKmS);
     const isHit = (result?.total?.dv_kms ?? 0) >= marker.thresholdKmS;
-    const isTarget = result?.total?.mission_target === marker.mission;
+    const isTarget = result?.total?.target_orbit_altitude_km === marker.altitudeKm;
 
     return `
       <li style="left:${percent}%" class="${isHit ? 'is-hit' : ''} ${isTarget ? 'is-target' : ''}">
-        <strong>${marker.mission === 'Lunar landing' ? 'L' : marker.mission[0]}</strong>
+        <strong>${marker.badge}</strong>
         <span>${t(marker.labelKey)}</span>
       </li>
     `;
@@ -1178,7 +1261,20 @@ function renderSummary(result, blocked, errorMessage = '') {
   verdictPill.textContent = translatedVerdict(result.total.verdict);
   verdictPill.className = `designer-v2-verdict-pill ${verdictClass}`.trim();
 
-  if (result.total.mission_target) {
+  if (
+    Number.isFinite(result.total.target_orbit_altitude_km) &&
+    Number.isFinite(result.total.target_requirement_kms)
+  ) {
+    missionTarget.textContent = formatMessage(
+      result.total.target_met
+        ? 'designer_v2.summary.target_orbit_met'
+        : 'designer_v2.summary.target_orbit_missed',
+      {
+        target: formatTargetOrbitLabel(result.total.target_orbit_altitude_km),
+        requirement: oneDecimalFmt.format(result.total.target_requirement_kms),
+      }
+    );
+  } else if (result.total.mission_target) {
     missionTarget.textContent = formatMessage(
       result.total.target_met
         ? 'designer_v2.summary.target_met'
@@ -1313,7 +1409,10 @@ function removeStage() {
 }
 
 function loadPreset(presetId) {
-  applyDraft(loadDraftFromPreset(presetId, state.engines));
+  applyDraft({
+    ...loadDraftFromPreset(presetId, state.engines),
+    targetOrbitAltitudeKm: state.targetOrbitAltitudeKm,
+  });
   renderCards();
   updateOutputs();
 }
@@ -1353,10 +1452,16 @@ function handleFormInput(event) {
     target.matches('input, select') &&
     !target.id.match(/^stage-\d+-engine$/) &&
     target.id !== 'booster-engine' &&
+    target.id !== 'target-orbit-altitude' &&
     target.getAttribute('name') !== 'booster-type';
 
   if (shouldMarkCustom) {
     markDraftAsCustom();
+  }
+
+  if (target.id === 'target-orbit-altitude') {
+    syncStateFromInputs();
+    renderMissionControls();
   }
 
   if (target.id.match(/^stage-\d+-engine$/)) {
@@ -1395,6 +1500,17 @@ function handlePresetQuickLoadClick(event) {
   }
 
   loadPreset(button.getAttribute('data-preset-load'));
+}
+
+function handleMissionQuickPickClick(event) {
+  const button = event.target.closest('[data-target-altitude]');
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  state.targetOrbitAltitudeKm = button.getAttribute('data-target-altitude');
+  renderMissionControls();
+  updateOutputs();
 }
 
 function handleAnalyzeClick() {
@@ -1507,6 +1623,7 @@ async function init() {
   const removeStageButton = document.getElementById('remove-stage');
   const presetSelect = document.getElementById('preset-select');
   const presetQuickLoad = document.getElementById('preset-quick-load');
+  const missionQuickPicks = document.getElementById('mission-quick-picks');
   const form = document.getElementById('designer-v2-form');
   const analyzeButton = document.getElementById('analyze-button');
 
@@ -1515,6 +1632,7 @@ async function init() {
     !removeStageButton ||
     !presetSelect ||
     !presetQuickLoad ||
+    !missionQuickPicks ||
     !form ||
     !analyzeButton
   ) {
@@ -1541,6 +1659,7 @@ async function init() {
   removeStageButton.addEventListener('click', removeStage);
   presetSelect.addEventListener('change', handlePresetChange);
   presetQuickLoad.addEventListener('click', handlePresetQuickLoadClick);
+  missionQuickPicks.addEventListener('click', handleMissionQuickPickClick);
   analyzeButton.addEventListener('click', handleAnalyzeClick);
   form.addEventListener('input', handleFormInput);
 }

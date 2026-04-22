@@ -136,4 +136,39 @@ describe('designer-v2 smoke flow', () => {
       expect(presetSelect.value).toBe('custom');
     });
   });
+
+  it('updates the mission requirement from quick-picks and custom orbit altitude', async () => {
+    await loadDesignerV2Page();
+
+    const presetSelect = document.getElementById('preset-select');
+    const altitudeInput = document.getElementById('target-orbit-altitude');
+
+    expect(presetSelect).not.toBeNull();
+    expect(altitudeInput).not.toBeNull();
+
+    presetSelect.value = 'falcon9';
+    presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(document.getElementById('mission-target')?.textContent).toContain('Target met');
+      expect(document.getElementById('mission-target')?.textContent).toContain('9.4');
+    });
+
+    const geoQuickPick = document.querySelector('[data-target-altitude="35786"]');
+    expect(geoQuickPick).not.toBeNull();
+    geoQuickPick.click();
+
+    await waitFor(() => {
+      expect(document.getElementById('target-orbit-altitude')?.value).toBe('35786');
+      expect(document.getElementById('mission-target')?.textContent).toContain('Target missed');
+      expect(document.getElementById('mission-target')?.textContent).toContain('13.3');
+    });
+
+    altitudeInput.value = '2000';
+    altitudeInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(document.getElementById('mission-target-preview')?.textContent).toContain('10.3');
+    });
+  });
 });
