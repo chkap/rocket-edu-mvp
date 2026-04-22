@@ -40,7 +40,8 @@
       </nav>
     </header>
 
-    <main id="content" class="designer-v2-layout">
+    <main id="content" class="designer-v2-page">
+      <div id="designer-v2-single" class="designer-v2-layout">
       <div class="designer-v2-main">
         <section aria-labelledby="designer-v2-intro-title">
           <h2 id="designer-v2-intro-title" data-i18n="designer_v2.intro.title"></h2>
@@ -76,6 +77,7 @@
               <div class="designer-v2-button-row">
                 <button type="button" id="add-stage" data-i18n="designer_v2.controls.add_stage"></button>
                 <button type="button" id="remove-stage" data-i18n="designer_v2.controls.remove_stage"></button>
+                <button type="button" id="compare-mode-toggle" data-i18n="designer_v2.compare.toggle"></button>
                 <button
                   type="button"
                   id="copy-share-link"
@@ -170,6 +172,40 @@
           <div id="rocket-silhouette" class="designer-v2-silhouette" aria-live="polite"></div>
         </section>
       </aside>
+      </div>
+
+      <section id="designer-v2-compare" class="designer-v2-compare" hidden>
+        <div class="designer-v2-compare-header">
+          <div>
+            <h2 data-i18n="designer_v2.compare.title"></h2>
+            <p class="muted" data-i18n="designer_v2.compare.note"></p>
+          </div>
+          <button type="button" id="compare-mode-exit" data-i18n="designer_v2.compare.exit"></button>
+        </div>
+
+        <div class="designer-v2-compare-grid">
+          <article class="designer-v2-compare-pane">
+            <div class="designer-v2-compare-pane-copy">
+              <h3 data-i18n="designer_v2.compare.pane_a"></h3>
+              <p class="muted" data-i18n="designer_v2.compare.pane_note"></p>
+            </div>
+            <iframe id="compare-pane-a" class="designer-v2-compare-frame" loading="lazy"></iframe>
+          </article>
+
+          <article class="designer-v2-compare-pane">
+            <div class="designer-v2-compare-pane-copy">
+              <h3 data-i18n="designer_v2.compare.pane_b"></h3>
+              <p class="muted" data-i18n="designer_v2.compare.pane_note"></p>
+            </div>
+            <iframe id="compare-pane-b" class="designer-v2-compare-frame" loading="lazy"></iframe>
+          </article>
+        </div>
+
+        <section class="designer-v2-compare-summary" aria-labelledby="designer-v2-compare-summary-title">
+          <h3 id="designer-v2-compare-summary-title" data-i18n="designer_v2.compare.summary_title"></h3>
+          <div id="compare-summary-cards" class="designer-v2-compare-cards"></div>
+        </section>
+      </section>
     </main>
 
     <footer>

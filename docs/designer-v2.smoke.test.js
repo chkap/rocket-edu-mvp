@@ -347,4 +347,65 @@ describe('designer-v2 smoke flow', () => {
       expect(document.querySelector('[data-engine-panel="raptor_2"]')?.textContent).toContain('Methane / LOX');
     });
   });
+
+  it('toggles compare mode and updates the comparison row from pane summaries', async () => {
+    await loadDesignerV2Page();
+
+    const compareToggle = document.getElementById('compare-mode-toggle');
+    const compareExit = document.getElementById('compare-mode-exit');
+    const comparePaneA = document.getElementById('compare-pane-a');
+    const comparePaneB = document.getElementById('compare-pane-b');
+    const compareSection = document.getElementById('designer-v2-compare');
+    const singleSection = document.getElementById('designer-v2-single');
+
+    expect(compareToggle).not.toBeNull();
+    expect(compareExit).not.toBeNull();
+    expect(comparePaneA).not.toBeNull();
+    expect(comparePaneB).not.toBeNull();
+    expect(compareSection).not.toBeNull();
+    expect(singleSection).not.toBeNull();
+
+    compareToggle.click();
+
+    await waitFor(() => {
+      expect(compareSection.hidden).toBe(false);
+      expect(singleSection.hidden).toBe(true);
+      expect(comparePaneA.src).toContain('embed=1');
+      expect(comparePaneA.src).toContain('pane=A');
+      expect(comparePaneB.src).toContain('pane=B');
+    });
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: window.location.origin,
+        data: {
+          type: 'designer-v2-compare-summary',
+          summary: { pane: 'A', dvKms: 9.5, launchMassKg: 550000, verdict: 'LEO' },
+        },
+      })
+    );
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: window.location.origin,
+        data: {
+          type: 'designer-v2-compare-summary',
+          summary: { pane: 'B', dvKms: 10.2, launchMassKg: 510000, verdict: 'GTO' },
+        },
+      })
+    );
+
+    await waitFor(() => {
+      const compareCards = document.getElementById('compare-summary-cards');
+      expect(compareCards?.textContent).toContain('B leads by 0.7 km/s');
+      expect(compareCards?.textContent).toContain('A: 9.5 km/s');
+      expect(compareCards?.textContent).toContain('B: 10.2 km/s');
+    });
+
+    compareExit.click();
+
+    await waitFor(() => {
+      expect(compareSection.hidden).toBe(true);
+      expect(singleSection.hidden).toBe(false);
+    });
+  });
 });
