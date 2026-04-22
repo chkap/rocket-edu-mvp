@@ -203,16 +203,12 @@ function stagePerformance(stage, options = {}) {
 
 export function gravityDragLoss(twrLiftoff) {
   assertPositiveNumber('twrLiftoff', twrLiftoff);
-
-  if (twrLiftoff >= 1.4) {
-    return 1500;
-  }
-
-  if (twrLiftoff >= 1.2) {
-    return 1800;
-  }
-
-  return 2200;
+  // Didactic first-stage atmospheric loss fit from issue #48 advisory comment:
+  // https://github.com/chkap/rocket-edu-mvp/issues/48#issuecomment-4293420598
+  // It preserves the 1500-2200 m/s educational envelope while smoothing the
+  // previous step buckets with a ~1/TWR-inspired exponential falloff.
+  const lossMs = 1500 + 700 * Math.exp(-2 * (twrLiftoff - 1.2));
+  return Math.min(2200, Math.max(1500, lossMs));
 }
 
 export function verdict(dv_kms) {

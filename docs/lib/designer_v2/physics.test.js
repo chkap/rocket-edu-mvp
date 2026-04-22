@@ -28,10 +28,25 @@ describe('effectiveIsp', () => {
 });
 
 describe('gravityDragLoss', () => {
-  it('maps liftoff TWR to the required loss buckets', () => {
-    expect(gravityDragLoss(1.45)).toBe(1500);
-    expect(gravityDragLoss(1.3)).toBe(1800);
+  it('follows the cited smooth atmospheric-loss fit within the target envelope', () => {
     expect(gravityDragLoss(1.1)).toBe(2200);
+    expect(gravityDragLoss(1.2)).toBeCloseTo(2200, 5);
+    expect(gravityDragLoss(1.4)).toBeCloseTo(1969, 0);
+    expect(gravityDragLoss(1.6)).toBeCloseTo(1815, 0);
+    expect(gravityDragLoss(2)).toBeCloseTo(1641, 0);
+    expect(gravityDragLoss(3)).toBeCloseTo(1519, 0);
+    expect(gravityDragLoss(6)).toBeCloseTo(1500, 0);
+  });
+
+  it('changes smoothly as liftoff TWR increases', () => {
+    const low = gravityDragLoss(1.3);
+    const medium = gravityDragLoss(1.31);
+    const high = gravityDragLoss(1.32);
+
+    expect(low).toBeGreaterThan(medium);
+    expect(medium).toBeGreaterThan(high);
+    expect(low - medium).toBeLessThan(20);
+    expect(medium - high).toBeLessThan(20);
   });
 });
 
@@ -52,7 +67,9 @@ describe('analyze presets', () => {
     const result = analyze(falcon9);
     expect(result.total.dv_kms).toBeGreaterThan(8.93);
     expect(result.total.dv_kms).toBeLessThan(9.87);
+    expect(result.total.verdict).toBe('LEO');
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_met).toBe(true);
   });
 
   it('keeps Saturn V within 5% of the target oracle', () => {
@@ -66,14 +83,18 @@ describe('analyze presets', () => {
     const result = analyze(slsBlock1);
     expect(result.total.dv_kms).toBeGreaterThan(9.025);
     expect(result.total.dv_kms).toBeLessThan(9.975);
+    expect(result.total.verdict).toBe('LEO');
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_met).toBe(true);
   });
 
   it('keeps Long March 5 within 5% of the target oracle', () => {
     const result = analyze(longMarch5);
     expect(result.total.dv_kms).toBeGreaterThan(9.025);
     expect(result.total.dv_kms).toBeLessThan(9.975);
+    expect(result.total.verdict).toBe('LEO');
     expect(result.total.mission_target).toBe('LEO');
+    expect(result.total.target_met).toBe(true);
   });
 });
 
@@ -206,6 +227,7 @@ describe('analyze edge cases', () => {
     expect(withoutBoosters.total.target_met).toBe(false);
     expect(withBoosters.total.dv_kms).toBeGreaterThanOrEqual(9.4);
     expect(withBoosters.total.verdict).toBe('LEO');
+    expect(withBoosters.total.mission_target).toBe('LEO');
     expect(withBoosters.total.target_met).toBe(true);
     expect(withBoosters.boosters?.dv_ms).toBeGreaterThan(0);
   });

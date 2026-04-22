@@ -88,6 +88,7 @@ describe('designer-v2 smoke flow', () => {
     await waitFor(() => {
       expect(document.getElementById('verdict-pill')?.textContent).toContain('LEO');
       expect(document.getElementById('summary-status')?.textContent).toContain('Ready');
+      expect(document.getElementById('total-dv')?.textContent).not.toBe('—');
     });
 
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
@@ -97,7 +98,7 @@ describe('designer-v2 smoke flow', () => {
     const totalDvText = document.getElementById('total-dv')?.textContent ?? '';
     const totalDv = Number(totalDvText.replace(/[^\d.]/g, ''));
 
-    expect(totalDv).toBeGreaterThanOrEqual(9.0);
-    expect(totalDv).toBeLessThanOrEqual(9.9);
+    expect(totalDv).toBeGreaterThanOrEqual(9.4);
+    expect(totalDv).toBeLessThanOrEqual(9.6);
   });
 });
