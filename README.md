@@ -11,11 +11,11 @@ GitHub Pages with no build step (plain HTML, CSS, and JavaScript files).
 
 ## Features
 
-- **Δv calculator** for the Tsiolkovsky rocket equation, with validation and a
-  worked Falcon 9 example.
-- **Multi-stage designer** for live per-stage Δv, TWR, capability labels, and
-  a stage-burn velocity chart.
-- **Real-mission compare** for cited launcher presets versus computed ideal Δv.
+The site intentionally ships three user-facing pages:
+
+1. **Equation guide** with a Δv calculator, worked Falcon 9 example, and plain-language explanation of the Tsiolkovsky rocket equation.
+2. **Multi-stage designer** for live per-stage Δv, TWR, capability labels, and a stage-burn velocity chart.
+3. **Advanced designer** for realistic multi-stage rocket design with presets, mission analysis, glossary help, silhouette updates, and share links.
 
 ## Sources
 

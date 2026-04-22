@@ -80,8 +80,8 @@ jobs:
             "ci": {
               "collect": {
                 "url": [
+                  "http://127.0.0.1:8080/index.html",
                   "http://127.0.0.1:8080/designer.html",
-                  "http://127.0.0.1:8080/compare.html",
                   "http://127.0.0.1:8080/designer-v2.html"
                 ],
                 "numberOfRuns": 1
@@ -100,5 +100,5 @@ jobs:
           }
           EOF
 
-          npx --yes wait-on http://127.0.0.1:8080/designer.html http://127.0.0.1:8080/compare.html http://127.0.0.1:8080/designer-v2.html
+          npx --yes wait-on http://127.0.0.1:8080/index.html http://127.0.0.1:8080/designer.html http://127.0.0.1:8080/designer-v2.html
           npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.json

@@ -290,7 +290,7 @@ describe('t and formatMessage', () => {
       href: 'https://example.test/index.html?lang=zh',
     });
 
-    expect(t('nav.compare')).toBe('火箭对比');
+    expect(t('nav.designer_v2')).toBe('火箭设计器 v2');
     expect(t('designer_v2.structural.fixed')).toBe('固定质量模型');
     expect(formatMessage('designer.stage.count.other', { count: 3 })).toBe('3 级');
   });
@@ -346,7 +346,7 @@ describe('applyTo', () => {
 describe('attachLanguageSwitcher', () => {
   it('binds click handlers and marks the active language', () => {
     const { state } = installGlobals({
-      href: 'https://example.test/compare.html?lang=en',
+      href: 'https://example.test/designer-v2.html?lang=en',
     });
 
     const enButton = makeElement();
@@ -362,7 +362,7 @@ describe('attachLanguageSwitcher', () => {
     expect(zhButton.classList.contains('is-active')).toBe(false);
 
     zhButton.click();
-    expect(state.assignedUrl).toBe('https://example.test/compare.html?lang=zh');
+    expect(state.assignedUrl).toBe('https://example.test/designer-v2.html?lang=zh');
   });
 });
 
