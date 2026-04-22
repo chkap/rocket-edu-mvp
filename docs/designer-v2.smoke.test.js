@@ -222,12 +222,12 @@ describe('designer-v2 smoke flow', () => {
 
     const glossaryTrigger = document.querySelector('[data-glossary-trigger="delta-v"]');
     const glossaryItem = document.querySelector('[data-glossary-item="delta-v"]');
-    const glossaryTooltip = document.getElementById('glossary-delta-v');
+    const glossaryTooltip = glossaryItem?.querySelector('[role="tooltip"]');
 
     expect(glossaryTrigger).not.toBeNull();
     expect(glossaryItem).not.toBeNull();
     expect(glossaryTooltip).not.toBeNull();
-    expect(document.querySelectorAll('[data-glossary-item]')).toHaveLength(13);
+    expect(document.querySelectorAll('#glossary-list [data-glossary-item]')).toHaveLength(22);
 
     glossaryTrigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
 
@@ -242,6 +242,36 @@ describe('designer-v2 smoke flow', () => {
     await waitFor(() => {
       expect(glossaryItem.classList.contains('is-open')).toBe(false);
       expect(glossaryTooltip.hasAttribute('hidden')).toBe(true);
+    });
+  });
+
+  it('wires glossary tooltips into mission chips, verdict text, and live metric labels', async () => {
+    await loadDesignerV2Page();
+
+    const presetSelect = document.getElementById('preset-select');
+    expect(presetSelect).not.toBeNull();
+
+    presetSelect.value = 'falcon9';
+    presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-target-altitude="200"][data-glossary-trigger="orbit-leo"]')).not.toBeNull();
+      expect(document.querySelector('#verdict-pill [data-glossary-trigger="orbit-leo"]')).not.toBeNull();
+      expect(document.querySelector('#stage-0-metrics [data-glossary-trigger="delta-v"]')).not.toBeNull();
+      expect(document.querySelector('[data-engine-panel="merlin_1d"] [data-glossary-trigger="sea-level-isp"]')).not.toBeNull();
+    });
+
+    const missionChipGlossary = document.querySelector(
+      '[data-target-altitude="35786"][data-glossary-trigger="orbit-geo"]'
+    );
+    expect(missionChipGlossary).not.toBeNull();
+    missionChipGlossary.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    await waitFor(() => {
+      const tooltip = missionChipGlossary.closest('[data-glossary-item]')?.querySelector('[role="tooltip"]');
+      expect(tooltip).not.toBeNull();
+      expect(tooltip?.hasAttribute('hidden')).toBe(false);
+      expect(tooltip?.textContent).toContain('Geostationary');
     });
   });
 
