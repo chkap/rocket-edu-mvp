@@ -1,11 +1,11 @@
 .designer-v2-page {
   display: grid;
-  gap: 1rem;
+  gap: 1.35rem;
 }
 
 .designer-v2-layout {
   display: grid;
-  gap: 1rem;
+  gap: 1.35rem;
 }
 
 @media (min-width: 1080px) {
@@ -17,16 +17,17 @@
 
 .designer-v2-main {
   display: grid;
-  gap: 1rem;
+  gap: 1.35rem;
 }
 
 .designer-v2-glossary-panel {
   display: grid;
   gap: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1rem;
+  border-radius: var(--radius-lg);
+  padding: 1.05rem;
   background: var(--surface-muted);
+  box-shadow: var(--shadow-card);
 }
 
 .designer-v2-glossary-panel h2 {
@@ -109,7 +110,7 @@
 .designer-v2-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.15rem;
   justify-content: space-between;
   align-items: flex-start;
 }
@@ -121,6 +122,11 @@
 .designer-v2-toolbar-actions {
   display: grid;
   gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface-strong) 80%, transparent 20%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
 .designer-v2-preset-field {
@@ -130,9 +136,10 @@
 .designer-v2-mission-panel {
   margin-top: 1rem;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1rem;
+  border-radius: var(--radius-lg);
+  padding: 1.05rem;
   background: var(--surface-muted);
+  box-shadow: var(--shadow-card);
 }
 
 .designer-v2-mission-field {
@@ -197,9 +204,26 @@
 
 .designer-v2-card {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 1rem;
   background: var(--surface-muted);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.designer-v2-card::before,
+.designer-v2-engine-card::before,
+.designer-v2-metric::before,
+.designer-v2-silhouette-panel::before,
+.designer-v2-mission-bar::before,
+.designer-v2-explainer::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.72), transparent);
+  pointer-events: none;
 }
 
 .designer-v2-card-header {
@@ -235,9 +259,9 @@
 }
 
 .designer-v2-drag-handle:hover {
-  border-color: var(--border);
-  background: #e2e8f0;
-  color: var(--text);
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 .designer-v2-drag-handle:active {
@@ -265,11 +289,12 @@
 .designer-v2-field-grid select {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.8rem;
   font-size: 1rem;
   background: var(--surface);
   color: var(--text);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .designer-v2-range-row {
@@ -330,9 +355,12 @@
   gap: 0.8rem;
   margin-top: 1rem;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0.9rem;
+  border-radius: var(--radius-md);
+  padding: 0.95rem;
   background: var(--surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 .designer-v2-engine-card-copy {
@@ -402,9 +430,10 @@
 }
 
 .designer-v2-engine-stats div {
-  padding: 0.7rem;
-  border-radius: 12px;
+  padding: 0.8rem;
+  border-radius: var(--radius-sm);
   background: var(--surface-muted);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
 
 .designer-v2-engine-stats dt {
@@ -431,9 +460,12 @@
 
 .designer-v2-metric {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--surface);
-  padding: 0.75rem;
+  padding: 0.85rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
 .designer-v2-metric h4 {
@@ -480,6 +512,7 @@
 .designer-v2-summary-panel {
   display: grid;
   gap: 1rem;
+  box-shadow: var(--shadow-card);
 }
 
 .designer-v2-silhouette-panel {
@@ -487,9 +520,12 @@
   gap: 0.85rem;
   margin-top: 1rem;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 1rem;
   background: var(--surface-muted);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
 }
 
 .designer-v2-silhouette-copy h2,
@@ -571,6 +607,7 @@
   font-size: clamp(2rem, 6vw, 3rem);
   line-height: 1;
   font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 .designer-v2-verdict-row,
@@ -585,11 +622,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.65rem;
+  padding: 0.42rem 0.78rem;
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent-text);
   font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .designer-v2-verdict-pill.is-suborbital {
@@ -611,9 +649,12 @@
   display: grid;
   gap: 0.85rem;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 0.95rem;
   background: linear-gradient(90deg, var(--accent-gradient-start), var(--accent-gradient-end));
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
 }
 
 .designer-v2-mission-track {
@@ -693,9 +734,10 @@
   align-items: flex-start;
   gap: 0.6rem;
   padding: 0.65rem 0.75rem;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--surface-strong) 88%, transparent 12%);
   border: 1px solid color-mix(in srgb, var(--border) 82%, transparent 18%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .designer-v2-mission-legend li.is-target {
@@ -731,9 +773,11 @@
 
 .designer-v2-explainer {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   overflow: hidden;
+  box-shadow: var(--shadow-card);
+  position: relative;
 }
 
 .designer-v2-explainer-summary {
