@@ -1,3 +1,4 @@
 .agents/log
 .agents/cfg/
 .agents/.lock
+node_modules/

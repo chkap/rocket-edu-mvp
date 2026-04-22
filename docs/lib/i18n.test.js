@@ -390,6 +390,7 @@ describe('attachThemeToggle', () => {
 
     expect(toggleButton.textContent).toBe('Light');
     expect(toggleButton.getAttribute('aria-pressed')).toBe('false');
+    expect(toggleButton.classList.contains('is-active')).toBe(true);
 
     toggleButton.click();
 
@@ -397,5 +398,6 @@ describe('attachThemeToggle', () => {
     expect(toggleButton.textContent).toBe('Dark');
     expect(toggleButton.getAttribute('aria-pressed')).toBe('true');
     expect(toggleButton.getAttribute('aria-label')).toBe('Switch to light theme');
+    expect(toggleButton.classList.contains('is-active')).toBe(true);
   });
 });

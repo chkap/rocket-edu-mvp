@@ -439,4 +439,35 @@ describe('designer-v2 smoke flow', () => {
     expect(siblingText).toBe('');
   });
 
+  it('renders the header bar with H1, nav, theme toggle, and language toggle', async () => {
+    await loadDesignerV2Page();
+
+    const header = document.querySelector('header');
+    expect(header).not.toBeNull();
+
+    const h1 = header.querySelector('h1');
+    expect(h1).not.toBeNull();
+    expect(h1.textContent.length).toBeGreaterThan(0);
+
+    const navRow = header.querySelector('.nav-row');
+    expect(navRow).not.toBeNull();
+
+    const navLinks = navRow.querySelectorAll('nav ul a, ul a');
+    expect(navLinks.length).toBeGreaterThanOrEqual(2);
+
+    const themeToggle = header.querySelector('[data-theme-toggle]');
+    expect(themeToggle).not.toBeNull();
+    expect(themeToggle.classList.contains('is-active')).toBe(true);
+
+    const langSwitcher = header.querySelector('.lang-switcher');
+    expect(langSwitcher).not.toBeNull();
+    const langButtons = langSwitcher.querySelectorAll('button');
+    expect(langButtons.length).toBe(2);
+
+    const navControls = header.querySelector('.nav-controls');
+    expect(navControls).not.toBeNull();
+    expect(navControls.querySelector('.theme-switcher')).not.toBeNull();
+    expect(navControls.querySelector('.lang-switcher')).not.toBeNull();
+  });
+
 });
