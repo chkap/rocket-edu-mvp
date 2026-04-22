@@ -295,6 +295,99 @@
   color: var(--muted);
 }
 
+.designer-v2-engine-card {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.designer-v2-engine-card-copy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.designer-v2-engine-card-copy h4,
+.designer-v2-engine-card-copy p {
+  margin: 0;
+}
+
+.designer-v2-engine-propellant {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.designer-v2-engine-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.designer-v2-engine-illustration {
+  width: 100%;
+  height: auto;
+  color: #475569;
+}
+
+.designer-v2-engine-illustration.is-rp1 {
+  color: #2563eb;
+}
+
+.designer-v2-engine-illustration.is-methane {
+  color: #7c3aed;
+}
+
+.designer-v2-engine-illustration.is-hydrogen {
+  color: #0f766e;
+}
+
+.designer-v2-engine-illustration.is-solid {
+  color: #ea580c;
+}
+
+.designer-v2-engine-illustration-caption {
+  fill: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.designer-v2-engine-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.designer-v2-engine-stats div {
+  padding: 0.7rem;
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+
+.designer-v2-engine-stats dt {
+  margin: 0 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.designer-v2-engine-stats dd {
+  margin: 0;
+  font-weight: 800;
+}
+
 .designer-v2-hidden {
   display: none !important;
 }
@@ -708,6 +801,10 @@
 
   .designer-v2-glossary-tooltip {
     width: min(16rem, 78vw);
+  }
+
+  .designer-v2-engine-card-body {
+    grid-template-columns: 1fr;
   }
 
   .designer-v2-summary-header {

@@ -325,4 +325,26 @@ describe('designer-v2 smoke flow', () => {
       expect(silhouette.querySelectorAll('.designer-v2-silhouette-booster').length).toBeGreaterThan(0);
     });
   });
+
+  it('updates the engine spotlight card when the selected engine changes', async () => {
+    await loadDesignerV2Page();
+
+    const stageEngine = document.getElementById('stage-0-engine');
+    expect(stageEngine).not.toBeNull();
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-engine-panel="merlin_1d"]')).not.toBeNull();
+      expect(document.querySelector('[data-engine-panel="merlin_1d"]')?.textContent).toContain('845 kN');
+      expect(document.querySelector('[data-engine-panel="merlin_1d"]')?.textContent).toContain('RP-1 / LOX');
+    });
+
+    stageEngine.value = 'raptor_2';
+    stageEngine.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-engine-panel="raptor_2"]')).not.toBeNull();
+      expect(document.querySelector('[data-engine-panel="raptor_2"]')?.textContent).toContain('2,260 kN');
+      expect(document.querySelector('[data-engine-panel="raptor_2"]')?.textContent).toContain('Methane / LOX');
+    });
+  });
 });

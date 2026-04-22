@@ -1141,6 +1141,93 @@ function nozzleMarkup({ groupName, engine, value }) {
   `;
 }
 
+function propellantLabel(propellant) {
+  return t(`designer_v2.propellant.${propellant}`);
+}
+
+function formatStatValue(value, suffix, digits = 0) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return '—';
+  }
+
+  return `${new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value)} ${suffix}`;
+}
+
+function engineSpotlightIllustration(engine, panelId) {
+  const accentClass = engine?.propellant === 'LH2_LOX' ? 'is-hydrogen' : engine?.propellant === 'CH4_LOX' ? 'is-methane' : engine?.propellant === 'SOLID' ? 'is-solid' : 'is-rp1';
+  const vacuumOnly = engine?.thrust_sl_kN === 0 || engine?.isp_sl === 0;
+  const nozzleWidth = vacuumOnly ? 56 : 38;
+  const chamberWidth = engine?.propellant === 'SOLID' ? 52 : 36;
+
+  return `
+    <svg
+      viewBox="0 0 160 170"
+      class="designer-v2-engine-illustration ${accentClass}"
+      role="img"
+      aria-labelledby="${panelId}-title"
+    >
+      <defs>
+        <linearGradient id="${panelId}-shell" x1="0" x2="1">
+          <stop offset="0%" stop-color="currentColor" stop-opacity="0.85" />
+          <stop offset="100%" stop-color="currentColor" stop-opacity="0.55" />
+        </linearGradient>
+      </defs>
+      <rect x="60" y="16" width="40" height="26" rx="12" fill="url(#${panelId}-shell)" />
+      <rect x="${80 - chamberWidth / 2}" y="40" width="${chamberWidth}" height="42" rx="12" fill="url(#${panelId}-shell)" />
+      <path d="M ${80 - nozzleWidth / 2} 82 L ${80 + nozzleWidth / 2} 82 L 104 142 L 56 142 Z" fill="url(#${panelId}-shell)" />
+      <rect x="50" y="58" width="12" height="38" rx="6" fill="currentColor" fill-opacity="0.28" />
+      <rect x="98" y="58" width="12" height="38" rx="6" fill="currentColor" fill-opacity="0.28" />
+      <circle cx="80" cy="28" r="8" fill="#ffffff" fill-opacity="0.35" />
+      <path d="M 70 142 Q 80 160 90 142" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-opacity="0.2" />
+      <text x="80" y="158" text-anchor="middle" class="designer-v2-engine-illustration-caption">
+        ${vacuumOnly ? t('designer_v2.engine_card.vacuum_profile') : t('designer_v2.engine_card.sea_level_profile')}
+      </text>
+    </svg>
+  `;
+}
+
+function engineSpotlightMarkup(engine, panelId) {
+  if (!engine) {
+    return '';
+  }
+
+  return `
+    <section class="designer-v2-engine-card" aria-labelledby="${panelId}-title" data-engine-panel="${engine.key}">
+      <div class="designer-v2-engine-card-copy">
+        <div>
+          <p class="designer-v2-card-role">${t('designer_v2.engine_card.title')}</p>
+          <h4 id="${panelId}-title">${t(`designer_v2.engine.${engine.key}`)}</h4>
+        </div>
+        <p class="designer-v2-engine-propellant">${propellantLabel(engine.propellant)}</p>
+      </div>
+      <div class="designer-v2-engine-card-body">
+        ${engineSpotlightIllustration(engine, panelId)}
+        <dl class="designer-v2-engine-stats">
+          <div>
+            <dt>${t('designer_v2.engine_card.thrust_sea_level')}</dt>
+            <dd>${formatStatValue(engine.thrust_sl_kN, 'kN')}</dd>
+          </div>
+          <div>
+            <dt>${t('designer_v2.engine_card.thrust_vacuum')}</dt>
+            <dd>${formatStatValue(engine.thrust_vac_kN, 'kN')}</dd>
+          </div>
+          <div>
+            <dt>${t('designer_v2.engine_card.isp_sea_level')}</dt>
+            <dd>${formatStatValue(engine.isp_sl, 's', 0)}</dd>
+          </div>
+          <div>
+            <dt>${t('designer_v2.engine_card.isp_vacuum')}</dt>
+            <dd>${formatStatValue(engine.isp_vac, 's', 0)}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  `;
+}
+
 function metricMarkup(label, value, extraClass = '') {
   return `
     <article class="designer-v2-metric">
@@ -1327,6 +1414,8 @@ function stageCardMarkup(stage, index, analysis) {
           : ''
       }
 
+      ${engineSpotlightMarkup(engine, `stage-${index}-engine-panel`)}
+
       <div id="stage-${index}-metrics" class="designer-v2-metrics" aria-live="polite">
         ${stageMetricsMarkup(stageSummary)}
       </div>
@@ -1474,6 +1563,8 @@ function boosterCardMarkup(analysis) {
           ? ''
           : `<p class="designer-v2-note">${t('designer_v2.card.boosters_inactive')}</p>`
       }
+
+      ${engineSpotlightMarkup(engine, 'booster-engine-panel')}
 
       <div id="booster-metrics" class="designer-v2-metrics" aria-live="polite">
         ${stageMetricsMarkup(boosterSummary)}
