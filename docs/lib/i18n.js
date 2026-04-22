@@ -3,6 +3,8 @@ import zh from '../i18n/zh.json' with { type: 'json' };
 
 const DICTIONARIES = { en, zh };
 const SUPPORTED_LANGS = new Set(['en', 'zh']);
+const SUPPORTED_THEMES = new Set(['light', 'dark']);
+const THEME_STORAGE_KEY = 'rocket-theme';
 
 export function normalizeLang(raw) {
   if (typeof raw !== 'string' || raw.trim() === '') {
@@ -11,6 +13,15 @@ export function normalizeLang(raw) {
 
   const [base] = raw.trim().toLowerCase().split(/[-_]/);
   return SUPPORTED_LANGS.has(base) ? base : null;
+}
+
+export function normalizeTheme(raw) {
+  if (typeof raw !== 'string' || raw.trim() === '') {
+    return null;
+  }
+
+  const theme = raw.trim().toLowerCase();
+  return SUPPORTED_THEMES.has(theme) ? theme : null;
 }
 
 function readCookie(name) {
@@ -57,6 +68,31 @@ export function getLang() {
   return 'en';
 }
 
+export function getTheme() {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const storedTheme = normalizeTheme(window.localStorage.getItem(THEME_STORAGE_KEY));
+    if (storedTheme) {
+      return storedTheme;
+    }
+
+    if (typeof window.matchMedia === 'function') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        return 'dark';
+      }
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    const docTheme = normalizeTheme(document.documentElement?.getAttribute('data-theme'));
+    if (docTheme) {
+      return docTheme;
+    }
+  }
+
+  return 'light';
+}
+
 export function setLang(code) {
   const lang = normalizeLang(code) ?? 'en';
 
@@ -76,6 +112,27 @@ export function setLang(code) {
   }
 
   return lang;
+}
+
+function applyTheme(theme, root = document) {
+  const resolvedTheme = normalizeTheme(theme) ?? 'light';
+  const documentElement = root?.documentElement ?? document?.documentElement;
+
+  if (documentElement) {
+    documentElement.setAttribute('data-theme', resolvedTheme);
+  }
+
+  return resolvedTheme;
+}
+
+export function setTheme(theme, root = document) {
+  const resolvedTheme = normalizeTheme(theme) ?? 'light';
+
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.setItem(THEME_STORAGE_KEY, resolvedTheme);
+  }
+
+  return applyTheme(resolvedTheme, root);
 }
 
 function lookup(lang, key) {
@@ -173,6 +230,38 @@ export function attachLanguageSwitcher(root = document) {
   });
 }
 
+function syncThemeToggle(button, theme) {
+  const isDark = theme === 'dark';
+  button.textContent = t(isDark ? 'theme.dark' : 'theme.light');
+
+  const actionLabel = t(isDark ? 'theme.switch_to_light' : 'theme.switch_to_dark');
+  button.setAttribute('aria-label', actionLabel);
+  button.setAttribute('title', actionLabel);
+  button.setAttribute('aria-pressed', String(isDark));
+}
+
+export function attachThemeToggle(root = document) {
+  if (!root || typeof root.querySelectorAll !== 'function') {
+    return;
+  }
+
+  const activeTheme = applyTheme(getTheme());
+  root.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+    if (button.getAttribute('data-theme-bound') !== 'true') {
+      button.addEventListener('click', () => {
+        const nextTheme = getTheme() === 'dark' ? 'light' : 'dark';
+        const updatedTheme = setTheme(nextTheme);
+        root.querySelectorAll('[data-theme-toggle]').forEach((themeButton) => {
+          syncThemeToggle(themeButton, updatedTheme);
+        });
+      });
+      button.setAttribute('data-theme-bound', 'true');
+    }
+
+    syncThemeToggle(button, activeTheme);
+  });
+}
+
 export function initPage({ titleKey, descriptionKey } = {}) {
   if (typeof document !== 'undefined') {
     if (titleKey) {
@@ -189,4 +278,5 @@ export function initPage({ titleKey, descriptionKey } = {}) {
 
   applyTo(document);
   attachLanguageSwitcher(document);
+  attachThemeToggle(document);
 }

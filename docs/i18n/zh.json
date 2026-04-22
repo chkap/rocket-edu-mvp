@@ -1,6 +1,11 @@
 {
   "lang.english": "EN",
   "lang.chinese": "中文",
+  "theme.label": "主题",
+  "theme.light": "浅色",
+  "theme.dark": "深色",
+  "theme.switch_to_light": "切换到浅色主题",
+  "theme.switch_to_dark": "切换到深色主题",
   "nav.primary": "主导航",
   "nav.language_switcher": "语言切换",
   "nav.index": "公式指南",

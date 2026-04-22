@@ -174,9 +174,9 @@
 }
 
 .designer-v2-toggle input[type='radio']:checked + span {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--accent-text);
 }
 
 .designer-v2-note {
@@ -292,8 +292,8 @@
   gap: 0.35rem;
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--accent-soft);
+  color: var(--accent-text);
   font-weight: 700;
 }
 
@@ -304,8 +304,8 @@
 
 .designer-v2-verdict-pill.is-mars,
 .designer-v2-verdict-pill.is-lunar {
-  background: #ede9fe;
-  color: #6d28d9;
+  background: color-mix(in srgb, var(--accent-soft) 70%, rebeccapurple 30%);
+  color: var(--accent-text);
 }
 
 .designer-v2-summary-subtitle {
@@ -317,7 +317,7 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 2.9rem 0.75rem 1rem;
-  background: linear-gradient(90deg, #dbeafe, #ede9fe);
+  background: linear-gradient(90deg, var(--accent-gradient-start), var(--accent-gradient-end));
   min-height: 5.75rem;
 }
 
@@ -333,7 +333,7 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: min(var(--mission-progress, 0%), 100%);
-  background: linear-gradient(90deg, #1d4ed8, #7c3aed);
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 65%, rebeccapurple 35%));
 }
 
 .designer-v2-mission-current {
@@ -343,7 +343,7 @@
   width: 1rem;
   height: 1rem;
   border-radius: 999px;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--surface-strong);
   background: #0f172a;
   transform: translateX(-50%);
 }
@@ -379,19 +379,19 @@
   height: 1.25rem;
   margin-bottom: 0.4rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-strong);
   color: var(--text);
 }
 
 .designer-v2-mission-markers li.is-hit strong,
 .designer-v2-mission-markers li.is-target strong {
-  background: #1d4ed8;
+  background: var(--primary);
   color: #ffffff;
 }
 
 .designer-v2-mission-markers li.is-target span {
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--accent-text);
 }
 
 .designer-v2-warning-list {
@@ -425,4 +425,69 @@
   color: var(--danger);
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
+}
+
+@media (max-width: 720px) {
+  .designer-v2-toolbar-actions,
+  .designer-v2-preset-field {
+    width: 100%;
+  }
+
+  .designer-v2-button-row > button {
+    flex: 1 1 12rem;
+  }
+
+  .designer-v2-summary-header {
+    align-items: stretch;
+  }
+
+  .designer-v2-summary-header > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 540px) {
+  .designer-v2-card,
+  .designer-v2-summary-panel {
+    padding: 0.85rem;
+  }
+
+  .designer-v2-field-grid,
+  .designer-v2-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .designer-v2-range-row {
+    grid-template-columns: 1fr;
+  }
+
+  .designer-v2-toggle,
+  .designer-v2-toggle label,
+  .designer-v2-toggle.is-wide label {
+    width: 100%;
+  }
+
+  .designer-v2-button-row > button,
+  .designer-v2-card-tools > button,
+  .designer-v2-drag-handle {
+    width: 100%;
+  }
+
+  .designer-v2-card-header,
+  .designer-v2-card-tools {
+    align-items: stretch;
+  }
+
+  .designer-v2-mission-bar {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
+
+  .designer-v2-mission-markers li {
+    width: 3.75rem;
+  }
+
+  .designer-v2-mission-markers span {
+    font-size: 0.72rem;
+  }
 }

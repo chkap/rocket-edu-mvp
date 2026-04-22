@@ -77,10 +77,16 @@
             <li><a href="./compare.html" aria-current="page" data-i18n="nav.compare"></a></li>
             <li><a href="./designer-v2.html" data-i18n="nav.designer_v2"></a></li>
           </ul>
-          <div class="lang-switcher" data-i18n="nav.language_switcher" data-i18n-attr="aria-label">
-            <button type="button" data-set-lang="en" data-i18n="lang.english"></button>
-            <span class="lang-switcher-separator">|</span>
-            <button type="button" data-set-lang="zh" data-i18n="lang.chinese"></button>
+          <div class="nav-controls">
+            <div class="theme-switcher">
+              <span class="theme-switcher-label" data-i18n="theme.label"></span>
+              <button type="button" class="theme-toggle" data-theme-toggle></button>
+            </div>
+            <div class="lang-switcher" data-i18n="nav.language_switcher" data-i18n-attr="aria-label">
+              <button type="button" data-set-lang="en" data-i18n="lang.english"></button>
+              <span class="lang-switcher-separator">|</span>
+              <button type="button" data-set-lang="zh" data-i18n="lang.chinese"></button>
+            </div>
           </div>
         </div>
       </nav>

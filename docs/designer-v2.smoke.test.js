@@ -74,18 +74,25 @@ describe('designer-v2 smoke flow', () => {
 
     const presetSelect = document.getElementById('preset-select');
     const analyzeButton = document.getElementById('analyze-button');
+    const themeToggle = document.querySelector('[data-theme-toggle]');
 
     expect(presetSelect).not.toBeNull();
     expect(analyzeButton).not.toBeNull();
+    expect(themeToggle).not.toBeNull();
 
     presetSelect.value = 'falcon9';
     presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    themeToggle.click();
     analyzeButton.click();
 
     await waitFor(() => {
       expect(document.getElementById('verdict-pill')?.textContent).toContain('LEO');
       expect(document.getElementById('summary-status')?.textContent).toContain('Ready');
     });
+
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(window.localStorage.getItem('rocket-theme')).toBe('dark');
+    expect(presetSelect.value).toBe('falcon9');
 
     const totalDvText = document.getElementById('total-dv')?.textContent ?? '';
     const totalDv = Number(totalDvText.replace(/[^\d.]/g, ''));

@@ -1,6 +1,11 @@
 {
   "lang.english": "EN",
   "lang.chinese": "中文",
+  "theme.label": "Theme",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+  "theme.switch_to_light": "Switch to light theme",
+  "theme.switch_to_dark": "Switch to dark theme",
   "nav.primary": "Primary navigation",
   "nav.language_switcher": "Language switcher",
   "nav.index": "Equation guide",
