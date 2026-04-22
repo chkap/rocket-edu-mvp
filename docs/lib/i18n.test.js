@@ -3,11 +3,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   applyTo,
   attachLanguageSwitcher,
+  attachThemeToggle,
   formatMessage,
   getLang,
+  getTheme,
   initPage,
   normalizeLang,
+  normalizeTheme,
   setLang,
+  setTheme,
   t,
 } from './i18n.js';
 
@@ -16,14 +20,37 @@ function installGlobals({
   cookie = '',
   htmlLang = 'en',
   navigatorLanguage = 'en-US',
+  storedTheme = null,
+  prefersDark = false,
 } = {}) {
   const state = {
     cookie,
     assignedUrl: null,
+    theme: storedTheme,
+  };
+
+  const documentElementAttributes = new Map();
+  const documentElement = {
+    lang: htmlLang,
+    getAttribute(name) {
+      if (name === 'lang') {
+        return this.lang;
+      }
+
+      return documentElementAttributes.has(name) ? documentElementAttributes.get(name) : null;
+    },
+    setAttribute(name, value) {
+      if (name === 'lang') {
+        this.lang = String(value);
+        return;
+      }
+
+      documentElementAttributes.set(name, String(value));
+    },
   };
 
   const document = {
-    documentElement: { lang: htmlLang },
+    documentElement,
     title: '',
     querySelector(selector) {
       if (selector === 'meta[name="description"]') {
@@ -66,7 +93,29 @@ function installGlobals({
     },
   };
 
-  const window = { location };
+  const window = {
+    location,
+    localStorage: {
+      getItem(key) {
+        if (key !== 'rocket-theme') {
+          return null;
+        }
+
+        return state.theme;
+      },
+      setItem(key, value) {
+        if (key === 'rocket-theme') {
+          state.theme = String(value);
+        }
+      },
+    },
+    matchMedia(query) {
+      return {
+        matches: query === '(prefers-color-scheme: dark)' ? prefersDark : false,
+        media: query,
+      };
+    },
+  };
   const navigator = { language: navigatorLanguage };
 
   vi.stubGlobal('document', document);
@@ -141,6 +190,10 @@ function makeRoot(elements) {
         return elements.filter((element) => element.getAttribute('data-set-lang'));
       }
 
+      if (selector === '[data-theme-toggle]') {
+        return elements.filter((element) => element.getAttribute('data-theme-toggle') !== null);
+      }
+
       return [];
     },
   };
@@ -156,6 +209,14 @@ describe('normalizeLang', () => {
     expect(normalizeLang('zh-CN')).toBe('zh');
     expect(normalizeLang('EN')).toBe('en');
     expect(normalizeLang('fr')).toBeNull();
+  });
+});
+
+describe('normalizeTheme', () => {
+  it('normalizes supported theme values', () => {
+    expect(normalizeTheme(' DARK ')).toBe('dark');
+    expect(normalizeTheme('light')).toBe('light');
+    expect(normalizeTheme('solarized')).toBeNull();
   });
 });
 
@@ -194,6 +255,35 @@ describe('setLang', () => {
   });
 });
 
+describe('getTheme', () => {
+  it('prefers stored theme values and falls back to system preference', () => {
+    installGlobals({
+      storedTheme: 'dark',
+      prefersDark: false,
+    });
+
+    expect(getTheme()).toBe('dark');
+
+    installGlobals({
+      storedTheme: null,
+      prefersDark: true,
+    });
+
+    expect(getTheme()).toBe('dark');
+  });
+});
+
+describe('setTheme', () => {
+  it('stores the theme and updates the document theme attribute', () => {
+    const { state, document } = installGlobals();
+
+    setTheme('dark');
+
+    expect(state.theme).toBe('dark');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+  });
+});
+
 describe('t and formatMessage', () => {
   it('returns translated strings and interpolates placeholders', () => {
     installGlobals({
@@ -218,6 +308,7 @@ describe('initPage', () => {
   it('updates the title and meta description before applying translations', () => {
     const { document } = installGlobals({
       href: 'https://example.test/index.html?lang=zh',
+      storedTheme: 'dark',
     });
 
     initPage({
@@ -227,6 +318,7 @@ describe('initPage', () => {
 
     expect(document.title).toBe('火箭方程计算器 - 学习齐奥尔科夫斯基火箭方程');
     expect(document._description.value).toBe('通过简单计算器、解释和示例学习并探索齐奥尔科夫斯基火箭方程。');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 });
 
@@ -271,5 +363,30 @@ describe('attachLanguageSwitcher', () => {
 
     zhButton.click();
     expect(state.assignedUrl).toBe('https://example.test/compare.html?lang=zh');
+  });
+});
+
+describe('attachThemeToggle', () => {
+  it('binds click handlers, updates labels, and persists the chosen theme', () => {
+    const { state } = installGlobals({
+      href: 'https://example.test/designer-v2.html?lang=en',
+      storedTheme: 'light',
+    });
+
+    const toggleButton = makeElement();
+    toggleButton.setAttribute('data-theme-toggle', '');
+
+    const root = makeRoot([toggleButton]);
+    attachThemeToggle(root);
+
+    expect(toggleButton.textContent).toBe('Light');
+    expect(toggleButton.getAttribute('aria-pressed')).toBe('false');
+
+    toggleButton.click();
+
+    expect(state.theme).toBe('dark');
+    expect(toggleButton.textContent).toBe('Dark');
+    expect(toggleButton.getAttribute('aria-pressed')).toBe('true');
+    expect(toggleButton.getAttribute('aria-label')).toBe('Switch to light theme');
   });
 });
