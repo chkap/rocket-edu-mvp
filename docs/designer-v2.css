@@ -133,6 +133,17 @@
   min-width: min(100%, 18rem);
 }
 
+.designer-v2-preset-field select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.8rem;
+  min-height: 2.75rem;
+  font-size: 0.88rem;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
 .designer-v2-mission-panel {
   margin-top: 1rem;
   border: 1px solid var(--border);
@@ -610,6 +621,13 @@
   letter-spacing: -0.04em;
 }
 
+.designer-v2-total-unit {
+  font-size: 0.55em;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
 .designer-v2-verdict-row,
 .designer-v2-target-row {
   display: flex;
@@ -722,7 +740,7 @@
 
 .designer-v2-mission-legend {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
   gap: 0.6rem;
   list-style: none;
   margin: 0;
@@ -748,6 +766,9 @@
 .designer-v2-mission-legend-copy {
   display: grid;
   gap: 0.15rem;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .designer-v2-mission-legend-copy .designer-v2-glossary-item,

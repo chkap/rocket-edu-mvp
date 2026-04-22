@@ -31,9 +31,11 @@ export const MISSION_MARKERS = [
   { id: 'iss', labelKey: 'designer_v2.target.iss', glossaryId: 'orbit-iss', altitudeKm: 400, badge: 'I' },
   { id: 'meo', labelKey: 'designer_v2.target.meo', glossaryId: 'orbit-meo', altitudeKm: 2000, badge: 'M' },
   { id: 'geo', labelKey: 'designer_v2.target.geo', glossaryId: 'orbit-geo', altitudeKm: 35786, badge: 'G' },
+  { id: 'gto', labelKey: 'designer_v2.target.gto', glossaryId: 'orbit-gto', fixedThresholdKmS: 11.8, badge: 'T' },
+  { id: 'tli', labelKey: 'designer_v2.target.tli', glossaryId: 'orbit-tli', fixedThresholdKmS: 12.4, badge: 'U' },
 ].map((marker) => ({
   ...marker,
-  thresholdKmS: targetOrbitRequirementKmS(marker.altitudeKm),
+  thresholdKmS: marker.fixedThresholdKmS ?? targetOrbitRequirementKmS(marker.altitudeKm),
 }));
 
 const VERDICT_KEY_MAP = {
@@ -596,7 +598,9 @@ function renderMissionControls() {
   const missionQuickPicks = document.getElementById('mission-quick-picks');
   const activeMarker = getMissionMarkerByAltitude(state.targetOrbitAltitudeKm);
   if (missionQuickPicks) {
-    missionQuickPicks.innerHTML = MISSION_MARKERS.map((marker) => {
+    missionQuickPicks.innerHTML = MISSION_MARKERS
+      .filter((marker) => marker.altitudeKm != null)
+      .map((marker) => {
       const activeClass = marker.id === activeMarker?.id ? ' is-active' : '';
       return glossaryMarkup(marker.glossaryId, {
         text: t(marker.labelKey),
@@ -2097,7 +2101,7 @@ function renderSummary(result, blocked, errorMessage = '') {
           ? 'is-lunar'
           : '';
 
-  totalDv.textContent = `${oneDecimalFmt.format(result.total.dv_kms)} km/s`;
+  totalDv.innerHTML = `${escapeHtml(oneDecimalFmt.format(result.total.dv_kms))}<span class="designer-v2-total-unit">\u2009km/s</span>`;
   verdictPill.innerHTML = glossaryInlineMarkup(
     verdictGlossaryId(result.total.verdict),
     translatedVerdict(result.total.verdict)
