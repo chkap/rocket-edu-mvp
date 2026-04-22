@@ -27,10 +27,10 @@ const SHARE_VERSION = 1;
 const VERDICT_ORDER = ['Suborbital', 'LEO', 'GTO', 'TLI', 'Mars', 'Lunar landing'];
 
 export const MISSION_MARKERS = [
-  { id: 'leo', labelKey: 'designer_v2.target.leo', altitudeKm: 200, badge: 'L' },
-  { id: 'iss', labelKey: 'designer_v2.target.iss', altitudeKm: 400, badge: 'I' },
-  { id: 'meo', labelKey: 'designer_v2.target.meo', altitudeKm: 2000, badge: 'M' },
-  { id: 'geo', labelKey: 'designer_v2.target.geo', altitudeKm: 35786, badge: 'G' },
+  { id: 'leo', labelKey: 'designer_v2.target.leo', glossaryId: 'orbit-leo', altitudeKm: 200, badge: 'L' },
+  { id: 'iss', labelKey: 'designer_v2.target.iss', glossaryId: 'orbit-iss', altitudeKm: 400, badge: 'I' },
+  { id: 'meo', labelKey: 'designer_v2.target.meo', glossaryId: 'orbit-meo', altitudeKm: 2000, badge: 'M' },
+  { id: 'geo', labelKey: 'designer_v2.target.geo', glossaryId: 'orbit-geo', altitudeKm: 35786, badge: 'G' },
 ].map((marker) => ({
   ...marker,
   thresholdKmS: targetOrbitRequirementKmS(marker.altitudeKm),
@@ -107,7 +107,23 @@ const GLOSSARY_TERMS = [
   { id: 'mass-ratio', labelKey: 'designer_v2.glossary.term.mass_ratio', bodyKey: 'designer_v2.glossary.body.mass_ratio' },
   { id: 'burn-time', labelKey: 'designer_v2.glossary.term.burn_time', bodyKey: 'designer_v2.glossary.body.burn_time' },
   { id: 'gravity-loss', labelKey: 'designer_v2.glossary.term.gravity_loss', bodyKey: 'designer_v2.glossary.body.gravity_loss' },
+  { id: 'suborbital', labelKey: 'designer_v2.glossary.term.suborbital', bodyKey: 'designer_v2.glossary.body.suborbital' },
+  { id: 'orbit-leo', labelKey: 'designer_v2.glossary.term.orbit_leo', bodyKey: 'designer_v2.glossary.body.orbit_leo' },
+  { id: 'orbit-iss', labelKey: 'designer_v2.glossary.term.orbit_iss', bodyKey: 'designer_v2.glossary.body.orbit_iss' },
+  { id: 'orbit-meo', labelKey: 'designer_v2.glossary.term.orbit_meo', bodyKey: 'designer_v2.glossary.body.orbit_meo' },
+  { id: 'orbit-geo', labelKey: 'designer_v2.glossary.term.orbit_geo', bodyKey: 'designer_v2.glossary.body.orbit_geo' },
+  { id: 'orbit-gto', labelKey: 'designer_v2.glossary.term.orbit_gto', bodyKey: 'designer_v2.glossary.body.orbit_gto' },
+  { id: 'orbit-tli', labelKey: 'designer_v2.glossary.term.orbit_tli', bodyKey: 'designer_v2.glossary.body.orbit_tli' },
+  { id: 'mars-transfer', labelKey: 'designer_v2.glossary.term.mars_transfer', bodyKey: 'designer_v2.glossary.body.mars_transfer' },
+  {
+    id: 'lunar-landing',
+    labelKey: 'designer_v2.glossary.term.lunar_landing',
+    bodyKey: 'designer_v2.glossary.body.lunar_landing',
+  },
 ];
+
+const GLOSSARY_TERM_MAP = new Map(GLOSSARY_TERMS.map((term) => [term.id, term]));
+let glossaryInstanceCounter = 0;
 
 const numberFmt = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 0,
@@ -188,6 +204,118 @@ function setShareStatus(message = '') {
   if (status) {
     status.textContent = message;
   }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function glossaryMarkup(
+  termId,
+  {
+    text = null,
+    triggerTag = 'button',
+    triggerClass = 'designer-v2-glossary-trigger',
+    itemClass = '',
+  } = {}
+) {
+  const term = GLOSSARY_TERM_MAP.get(termId);
+  const resolvedText = text ?? term?.labelKey ?? termId;
+  if (!term) {
+    return escapeHtml(resolvedText);
+  }
+
+  const tooltipId = `glossary-${term.id}-${++glossaryInstanceCounter}`;
+  const interactiveAttrs =
+    triggerTag === 'button' ? ' type="button"' : ' tabindex="0" role="button"';
+
+  return `
+    <span class="designer-v2-glossary-item${itemClass ? ` ${itemClass}` : ''}" data-glossary-item="${term.id}">
+      <${triggerTag}
+        class="${triggerClass}"
+        data-glossary-trigger="${term.id}"
+        aria-expanded="false"
+        aria-describedby="${tooltipId}"${interactiveAttrs}
+      >${escapeHtml(resolvedText)}</${triggerTag}>
+      <span id="${tooltipId}" class="designer-v2-glossary-tooltip" role="tooltip" hidden>
+        <strong>${escapeHtml(t(term.labelKey))}</strong>
+        ${escapeHtml(t(term.bodyKey))}
+      </span>
+    </span>
+  `.trim();
+}
+
+function withGlossaryTerm(text, termId) {
+  const term = GLOSSARY_TERM_MAP.get(termId);
+  if (!term) {
+    return escapeHtml(text);
+  }
+
+  const label = t(term.labelKey);
+  if (!text.includes(label)) {
+    return escapeHtml(text);
+  }
+
+  return text.replace(
+    label,
+    glossaryMarkup(termId, {
+      text: label,
+      triggerTag: 'span',
+      triggerClass: 'designer-v2-glossary-trigger is-inline',
+      itemClass: 'is-inline',
+    })
+  );
+}
+
+function withGlossaryTerms(text, termIds = []) {
+  return termIds.reduce((markup, termId) => {
+    const term = GLOSSARY_TERM_MAP.get(termId);
+    const label = term ? t(term.labelKey) : null;
+    if (!term || !label || !markup.includes(label)) {
+      return markup;
+    }
+
+    return markup.replace(
+      label,
+      glossaryMarkup(termId, {
+        text: label,
+        triggerTag: 'span',
+        triggerClass: 'designer-v2-glossary-trigger is-inline',
+        itemClass: 'is-inline',
+      })
+    );
+  }, escapeHtml(text));
+}
+
+function glossaryInlineMarkup(termId, text = null) {
+  return glossaryMarkup(termId, {
+    text,
+    triggerTag: 'span',
+    triggerClass: 'designer-v2-glossary-trigger is-inline',
+    itemClass: 'is-inline',
+  });
+}
+
+function targetGlossaryIdForAltitude(altitudeKm) {
+  return getMissionMarkerByAltitude(altitudeKm)?.glossaryId ?? null;
+}
+
+function verdictGlossaryId(rawVerdict) {
+  return (
+    {
+      Suborbital: 'suborbital',
+      LEO: 'orbit-leo',
+      GTO: 'orbit-gto',
+      TLI: 'orbit-tli',
+      Mars: 'mars-transfer',
+      'Lunar landing': 'lunar-landing',
+    }[rawVerdict] ?? null
+  );
 }
 
 function cloneStageForShare(stage = {}) {
@@ -470,9 +598,13 @@ function renderMissionControls() {
   if (missionQuickPicks) {
     missionQuickPicks.innerHTML = MISSION_MARKERS.map((marker) => {
       const activeClass = marker.id === activeMarker?.id ? ' is-active' : '';
-      return `<button type="button" class="designer-v2-mission-chip${activeClass}" data-target-altitude="${marker.altitudeKm}">${t(
-        marker.labelKey
-      )}</button>`;
+      return glossaryMarkup(marker.glossaryId, {
+        text: t(marker.labelKey),
+        triggerClass: `designer-v2-mission-chip${activeClass}`,
+      }).replace(
+        'aria-describedby=',
+        `data-target-altitude="${marker.altitudeKm}" aria-describedby=`
+      );
     }).join('');
   }
 
@@ -490,8 +622,12 @@ function renderMissionControls() {
     return;
   }
 
-  preview.textContent = formatMessage('designer_v2.controls.target_orbit_preview', {
-    target: formatTargetOrbitLabel(altitudeKm),
+  const targetLabel = formatTargetOrbitLabel(altitudeKm);
+  preview.innerHTML = formatMessage('designer_v2.controls.target_orbit_preview_html', {
+    target:
+      targetGlossaryIdForAltitude(altitudeKm) !== null
+        ? glossaryInlineMarkup(targetGlossaryIdForAltitude(altitudeKm), targetLabel)
+        : escapeHtml(targetLabel),
     requirement: oneDecimalFmt.format(targetOrbitRequirementKmS(altitudeKm)),
   });
 }
@@ -525,89 +661,68 @@ function renderGlossary() {
     return;
   }
 
-  glossaryList.innerHTML = GLOSSARY_TERMS.map(
-    (term) => `
-      <span class="designer-v2-glossary-item" data-glossary-item="${term.id}">
-        <button
-          type="button"
-          class="designer-v2-glossary-trigger"
-          data-glossary-trigger="${term.id}"
-          aria-expanded="false"
-          aria-describedby="glossary-${term.id}"
-        >
-          ${t(term.labelKey)}
-        </button>
-        <span id="glossary-${term.id}" class="designer-v2-glossary-tooltip" role="tooltip" hidden>
-          <strong>${t(term.labelKey)}</strong>
-          ${t(term.bodyKey)}
-        </span>
-      </span>
-    `
-  ).join('');
+  glossaryList.innerHTML = GLOSSARY_TERMS.map((term) => glossaryMarkup(term.id)).join('');
+}
 
-  if (glossaryList.getAttribute('data-glossary-bound') === 'true') {
+function bindGlossaryInteractions(root = document) {
+  const body = root?.body ?? document.body;
+  if (!body || body.getAttribute('data-glossary-bound') === 'true') {
     return;
   }
 
-  glossaryList.addEventListener('focusin', (event) => {
+  document.addEventListener('focusin', (event) => {
     const item = event.target.closest('[data-glossary-item]');
     if (item instanceof HTMLElement) {
       openGlossaryTooltip(item);
     }
   });
 
-  glossaryList.addEventListener('focusout', (event) => {
+  document.addEventListener('focusout', (event) => {
     const item = event.target.closest('[data-glossary-item]');
     if (!(item instanceof HTMLElement) || item.contains(event.relatedTarget)) {
       return;
     }
 
-    closeGlossaryTooltips(glossaryList);
+    closeGlossaryTooltips(root);
   });
 
-  glossaryList.addEventListener('mouseover', (event) => {
+  document.addEventListener('mouseover', (event) => {
     const item = event.target.closest('[data-glossary-item]');
     if (item instanceof HTMLElement) {
       openGlossaryTooltip(item);
     }
   });
 
-  glossaryList.addEventListener('mouseout', (event) => {
+  document.addEventListener('mouseout', (event) => {
     const item = event.target.closest('[data-glossary-item]');
     if (!(item instanceof HTMLElement) || item.contains(event.relatedTarget)) {
       return;
     }
 
-    closeGlossaryTooltips(glossaryList);
+    closeGlossaryTooltips(root);
   });
 
-  glossaryList.addEventListener('click', (event) => {
+  document.addEventListener('click', (event) => {
     const item = event.target.closest('[data-glossary-item]');
-    if (!(item instanceof HTMLElement)) {
+    if (item instanceof HTMLElement) {
+      if (item.classList.contains('is-open')) {
+        closeGlossaryTooltips(root);
+      } else {
+        openGlossaryTooltip(item);
+      }
       return;
     }
 
-    if (item.classList.contains('is-open')) {
-      closeGlossaryTooltips(glossaryList);
-      return;
-    }
-
-    openGlossaryTooltip(item);
+    closeGlossaryTooltips(root);
   });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      closeGlossaryTooltips(glossaryList);
+      closeGlossaryTooltips(root);
     }
   });
 
-  document.addEventListener('click', (event) => {
-    if (!glossaryList.contains(event.target)) {
-      closeGlossaryTooltips(glossaryList);
-    }
-  });
-
-  glossaryList.setAttribute('data-glossary-bound', 'true');
+  body.setAttribute('data-glossary-bound', 'true');
 }
 
 function getEngineMap(engines = state.engines) {
@@ -1221,11 +1336,11 @@ function engineSpotlightMarkup(engine, panelId) {
             <dd>${formatStatValue(engine.thrust_vac_kN, 'kN')}</dd>
           </div>
           <div>
-            <dt>${t('designer_v2.engine_card.isp_sea_level')}</dt>
+            <dt>${withGlossaryTerm(t('designer_v2.engine_card.isp_sea_level'), 'sea-level-isp')}</dt>
             <dd>${formatStatValue(engine.isp_sl, 's', 0)}</dd>
           </div>
           <div>
-            <dt>${t('designer_v2.engine_card.isp_vacuum')}</dt>
+            <dt>${withGlossaryTerm(t('designer_v2.engine_card.isp_vacuum'), 'vacuum-isp')}</dt>
             <dd>${formatStatValue(engine.isp_vac, 's', 0)}</dd>
           </div>
         </dl>
@@ -1272,10 +1387,10 @@ function stageMetricsMarkup(summary) {
     return [
       metricMarkup(t('designer_v2.metric.dry_mass'), '—'),
       metricMarkup(t('designer_v2.metric.wet_mass'), '—'),
-      metricMarkup(t('designer_v2.metric.delta_v'), '—'),
-      metricMarkup(t('designer_v2.metric.twr_ignition'), '—'),
-      metricMarkup(t('designer_v2.metric.twr_burnout'), '—'),
-      metricMarkup(t('designer_v2.metric.burn_time'), '—'),
+      metricMarkup(withGlossaryTerm(t('designer_v2.metric.delta_v'), 'delta-v'), '—'),
+      metricMarkup(withGlossaryTerm(t('designer_v2.metric.twr_ignition'), 'twr'), '—'),
+      metricMarkup(withGlossaryTerm(t('designer_v2.metric.twr_burnout'), 'twr'), '—'),
+      metricMarkup(withGlossaryTerm(t('designer_v2.metric.burn_time'), 'burn-time'), '—'),
       metricMarkup(t('designer_v2.metric.structural'), '—'),
     ].join('');
   }
@@ -1283,10 +1398,16 @@ function stageMetricsMarkup(summary) {
   return [
     metricMarkup(t('designer_v2.metric.dry_mass'), `${numberFmt.format(Math.round(summary.dry_mass_kg))} kg`),
     metricMarkup(t('designer_v2.metric.wet_mass'), `${numberFmt.format(Math.round(summary.wet_mass_kg))} kg`),
-    metricMarkup(t('designer_v2.metric.delta_v'), `${numberFmt.format(Math.round(summary.dv_ms))} m/s`),
-    metricMarkup(t('designer_v2.metric.twr_ignition'), twrFmt.format(summary.twr_ignition)),
-    metricMarkup(t('designer_v2.metric.twr_burnout'), twrFmt.format(summary.twr_burnout)),
-    metricMarkup(t('designer_v2.metric.burn_time'), `${numberFmt.format(Math.round(summary.burn_time_s))} s`),
+    metricMarkup(
+      withGlossaryTerm(t('designer_v2.metric.delta_v'), 'delta-v'),
+      `${numberFmt.format(Math.round(summary.dv_ms))} m/s`
+    ),
+    metricMarkup(withGlossaryTerm(t('designer_v2.metric.twr_ignition'), 'twr'), twrFmt.format(summary.twr_ignition)),
+    metricMarkup(withGlossaryTerm(t('designer_v2.metric.twr_burnout'), 'twr'), twrFmt.format(summary.twr_burnout)),
+    metricMarkup(
+      withGlossaryTerm(t('designer_v2.metric.burn_time'), 'burn-time'),
+      `${numberFmt.format(Math.round(summary.burn_time_s))} s`
+    ),
     metricMarkup(t('designer_v2.metric.structural'), structuralBadge(summary.structural_index)),
   ].join('');
 }
@@ -1306,8 +1427,8 @@ function stageCardMarkup(stage, index, analysis) {
     >
       <div class="designer-v2-card-header">
         <div>
-          <p class="designer-v2-card-role">${stageRole(index, state.stages.length)}</p>
-          <h3 id="stage-${index}-title">${stageName(stage, index)}</h3>
+          <p class="designer-v2-card-role">${withGlossaryTerm(stageRole(index, state.stages.length), 'stage')}</p>
+          <h3 id="stage-${index}-title">${withGlossaryTerm(stageName(stage, index), 'stage')}</h3>
         </div>
         <div class="designer-v2-card-tools">
           ${
@@ -1399,7 +1520,7 @@ function stageCardMarkup(stage, index, analysis) {
         ${
           topStage
             ? `<div class="form-field">
-                <label for="payload-mass">${t('designer.field.payload')}</label>
+                 <label for="payload-mass">${withGlossaryTerm(t('designer.field.payload'), 'fairing')}</label>
                 <input
                   id="payload-mass"
                   type="number"
@@ -1416,7 +1537,7 @@ function stageCardMarkup(stage, index, analysis) {
 
       ${
         topStage
-          ? `<p class="designer-v2-note">${t('designer_v2.card.fairing_note')}</p>`
+          ? `<p class="designer-v2-note">${withGlossaryTerm(t('designer_v2.card.fairing_note'), 'fairing')}</p>`
           : ''
       }
 
@@ -1442,16 +1563,16 @@ function boosterCardMarkup(analysis) {
     <article class="designer-v2-card" aria-labelledby="booster-title">
       <div class="designer-v2-card-header">
         <div>
-          <p class="designer-v2-card-role">${t('designer_v2.card.parallel_boosters')}</p>
+          <p class="designer-v2-card-role">${withGlossaryTerm(t('designer_v2.card.parallel_boosters'), 'booster')}</p>
           <h3 id="booster-title">${
-            boosters.nameKey ? t(boosters.nameKey) : t('designer_v2.card.boosters')
+            withGlossaryTerm(boosters.nameKey ? t(boosters.nameKey) : t('designer_v2.card.boosters'), 'booster')
           }</h3>
         </div>
       </div>
 
       <div class="designer-v2-field-grid">
         <div class="form-field">
-          <label>${t('designer_v2.field.booster_type')}</label>
+          <label>${withGlossaryTerm(t('designer_v2.field.booster_type'), 'booster')}</label>
           <div class="designer-v2-toggle is-wide" role="radiogroup" aria-label="${t('designer_v2.field.booster_type')}">
             <label>
               <input type="radio" name="booster-type" value="${BOOSTER_TYPES.LIQUID}"${
@@ -1483,7 +1604,7 @@ function boosterCardMarkup(analysis) {
         </div>
 
         <div class="form-field">
-          <label for="booster-count">${t('designer_v2.field.booster_count')}</label>
+          <label for="booster-count">${withGlossaryTerm(t('designer_v2.field.booster_count'), 'booster')}</label>
           <input
             id="booster-count"
             type="number"
@@ -1567,8 +1688,8 @@ function boosterCardMarkup(analysis) {
       ${
         boostersActive
           ? ''
-          : `<p class="designer-v2-note">${t('designer_v2.card.boosters_inactive')}</p>`
-      }
+           : `<p class="designer-v2-note">${withGlossaryTerm(t('designer_v2.card.boosters_inactive'), 'booster')}</p>`
+       }
 
       ${engineSpotlightMarkup(engine, 'booster-engine-panel')}
 
@@ -1681,7 +1802,7 @@ function renderMissionBar(result) {
       <li class="${classes}" data-mission-legend-id="${marker.id}">
         <span class="designer-v2-mission-legend-badge" aria-hidden="true">${marker.badge}</span>
         <span class="designer-v2-mission-legend-copy">
-          <strong>${t(marker.labelKey)}</strong>
+          ${glossaryInlineMarkup(marker.glossaryId, t(marker.labelKey))}
           <span>${oneDecimalFmt.format(marker.thresholdKmS)} km/s</span>
         </span>
       </li>
@@ -1716,9 +1837,12 @@ function buildVerdictBudget(result) {
 
     rows.push({
       kind: 'loss',
-      label: formatMessage('designer_v2.summary.explainer_gravity_loss', {
-        label: stage.label,
-      }),
+      label: withGlossaryTerm(
+        formatMessage('designer_v2.summary.explainer_gravity_loss', {
+          label: stage.label,
+        }),
+        'gravity-loss'
+      ),
       valueKmS: stage.gravity_drag_loss_ms / 1000,
     });
   });
@@ -1974,40 +2098,58 @@ function renderSummary(result, blocked, errorMessage = '') {
           : '';
 
   totalDv.textContent = `${oneDecimalFmt.format(result.total.dv_kms)} km/s`;
-  verdictPill.textContent = translatedVerdict(result.total.verdict);
+  verdictPill.innerHTML = glossaryInlineMarkup(
+    verdictGlossaryId(result.total.verdict),
+    translatedVerdict(result.total.verdict)
+  );
   verdictPill.className = `designer-v2-verdict-pill ${verdictClass}`.trim();
 
   if (
     Number.isFinite(result.total.target_orbit_altitude_km) &&
     Number.isFinite(result.total.target_requirement_kms)
   ) {
-    missionTarget.textContent = formatMessage(
+    missionTarget.innerHTML = formatMessage(
       result.total.target_met
-        ? 'designer_v2.summary.target_orbit_met'
-        : 'designer_v2.summary.target_orbit_missed',
+        ? 'designer_v2.summary.target_orbit_met_html'
+        : 'designer_v2.summary.target_orbit_missed_html',
       {
-        target: formatTargetOrbitLabel(result.total.target_orbit_altitude_km),
+        target:
+          targetGlossaryIdForAltitude(result.total.target_orbit_altitude_km) !== null
+            ? glossaryInlineMarkup(
+                targetGlossaryIdForAltitude(result.total.target_orbit_altitude_km),
+                formatTargetOrbitLabel(result.total.target_orbit_altitude_km)
+              )
+            : escapeHtml(formatTargetOrbitLabel(result.total.target_orbit_altitude_km)),
         requirement: oneDecimalFmt.format(result.total.target_requirement_kms),
       }
     );
   } else if (result.total.mission_target) {
-    missionTarget.textContent = formatMessage(
+    missionTarget.innerHTML = formatMessage(
       result.total.target_met
-        ? 'designer_v2.summary.target_met'
-        : 'designer_v2.summary.target_missed',
+        ? 'designer_v2.summary.target_met_html'
+        : 'designer_v2.summary.target_missed_html',
       {
-        target: translatedVerdict(result.total.mission_target),
+        target:
+          verdictGlossaryId(result.total.mission_target) !== null
+            ? glossaryInlineMarkup(
+                verdictGlossaryId(result.total.mission_target),
+                translatedVerdict(result.total.mission_target)
+              )
+            : escapeHtml(translatedVerdict(result.total.mission_target)),
       }
     );
   } else {
     missionTarget.textContent = t('designer_v2.summary.no_target');
   }
 
-  boosterPhase.textContent = result.boosters
-    ? formatMessage('designer_v2.summary.booster_jettison', {
-        dv: oneDecimalFmt.format(result.boosters.dv_ms / 1000),
-        propellant: oneDecimalFmt.format(result.boosters.stage1_remaining_propellant_kg / 1000),
-      })
+  boosterPhase.innerHTML = result.boosters
+    ? withGlossaryTerms(
+        formatMessage('designer_v2.summary.booster_jettison', {
+          dv: oneDecimalFmt.format(result.boosters.dv_ms / 1000),
+          propellant: oneDecimalFmt.format(result.boosters.stage1_remaining_propellant_kg / 1000),
+        }),
+        ['booster', 'delta-v', 'stage']
+      )
     : t('designer_v2.summary.no_booster_phase');
 
   warningsList.innerHTML =
@@ -2021,6 +2163,20 @@ function renderSummary(result, blocked, errorMessage = '') {
   renderRocketSilhouette();
   renderMissionBar(result);
   renderVerdictExplainer(result);
+}
+
+function renderStaticGlossaryLabels() {
+  const mappings = [
+    ['designer_v2.summary.total_dv', 'delta-v'],
+    ['designer_v2.summary.booster_phase', 'booster'],
+  ];
+
+  mappings.forEach(([key, termId]) => {
+    const element = document.querySelector(`[data-i18n="${key}"]`);
+    if (element) {
+      element.innerHTML = withGlossaryTerm(t(key), termId);
+    }
+  });
 }
 
 function renderValidationErrors(errors) {
@@ -2394,6 +2550,8 @@ async function init() {
     applyDraft(loadDraftFromPreset('custom', state.engines));
   }
   renderGlossary();
+  bindGlossaryInteractions(document);
+  renderStaticGlossaryLabels();
   renderCards();
   updateOutputs();
   enableDragAndDrop();
