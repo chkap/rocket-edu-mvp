@@ -225,7 +225,7 @@ function glossaryMarkup(
   } = {}
 ) {
   const term = GLOSSARY_TERM_MAP.get(termId);
-  const resolvedText = text ?? term?.labelKey ?? termId;
+  const resolvedText = text ?? t(term?.labelKey) ?? termId;
   if (!term) {
     return escapeHtml(resolvedText);
   }

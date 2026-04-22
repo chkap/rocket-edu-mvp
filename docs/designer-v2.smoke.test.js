@@ -245,6 +245,18 @@ describe('designer-v2 smoke flow', () => {
     });
   });
 
+  it('renders glossary trigger labels as translated text, not raw i18n keys', async () => {
+    await loadDesignerV2Page();
+
+    const triggers = document.querySelectorAll('#glossary-list [data-glossary-trigger]');
+    expect(triggers.length).toBeGreaterThan(0);
+
+    for (const trigger of triggers) {
+      const text = trigger.textContent.trim();
+      expect(text).not.toMatch(/^designer_v2\./);
+    }
+  });
+
   it('wires glossary tooltips into mission chips, verdict text, and live metric labels', async () => {
     await loadDesignerV2Page();
 
