@@ -20,25 +20,7 @@
   gap: 1.35rem;
 }
 
-.designer-v2-glossary-panel {
-  display: grid;
-  gap: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.05rem;
-  background: var(--surface-muted);
-  box-shadow: var(--shadow-card);
-}
-
-.designer-v2-glossary-panel h2 {
-  margin: 0;
-}
-
-.designer-v2-glossary-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
+/* Glossary panel removed — terms live on glossary.html now */
 
 .designer-v2-glossary-item {
   position: relative;

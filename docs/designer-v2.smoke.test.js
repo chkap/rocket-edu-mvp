@@ -226,7 +226,7 @@ describe('designer-v2 smoke flow', () => {
     });
   });
 
-  it('opens glossary tooltips on focus and closes them on Escape', async () => {
+  it('inline glossary tooltips open on focus and close on Escape', async () => {
     await loadDesignerV2Page();
 
     const glossaryTrigger = document.querySelector('[data-glossary-trigger="delta-v"]');
@@ -236,7 +236,6 @@ describe('designer-v2 smoke flow', () => {
     expect(glossaryTrigger).not.toBeNull();
     expect(glossaryItem).not.toBeNull();
     expect(glossaryTooltip).not.toBeNull();
-    expect(document.querySelectorAll('#glossary-list [data-glossary-item]')).toHaveLength(22);
 
     glossaryTrigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
 
@@ -254,10 +253,18 @@ describe('designer-v2 smoke flow', () => {
     });
   });
 
-  it('renders glossary trigger labels as translated text, not raw i18n keys', async () => {
+  it('standalone glossary panel is removed (terms live on glossary.html)', async () => {
     await loadDesignerV2Page();
 
-    const triggers = document.querySelectorAll('#glossary-list [data-glossary-trigger]');
+    expect(document.querySelector('[aria-label="Flight glossary"], .glossary-region')).toBeNull();
+    expect(document.querySelector('.designer-v2-glossary-panel')).toBeNull();
+    expect(document.getElementById('glossary-list')).toBeNull();
+  });
+
+  it('renders inline glossary trigger labels as translated text, not raw i18n keys', async () => {
+    await loadDesignerV2Page();
+
+    const triggers = document.querySelectorAll('[data-glossary-trigger]');
     expect(triggers.length).toBeGreaterThan(0);
 
     for (const trigger of triggers) {
