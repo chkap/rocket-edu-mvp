@@ -292,4 +292,37 @@ describe('designer-v2 smoke flow', () => {
       expect(document.getElementById('share-status')?.textContent).toContain('restored');
     });
   });
+
+  it('renders a live rocket silhouette that reacts to stage and booster changes', async () => {
+    await loadDesignerV2Page();
+
+    const silhouette = document.getElementById('rocket-silhouette');
+    const addStageButton = document.getElementById('add-stage');
+    const presetSelect = document.getElementById('preset-select');
+
+    expect(silhouette).not.toBeNull();
+    expect(addStageButton).not.toBeNull();
+    expect(presetSelect).not.toBeNull();
+
+    await waitFor(() => {
+      expect(silhouette.querySelector('svg')).not.toBeNull();
+      expect(silhouette.querySelector('svg')?.getAttribute('data-stage-count')).toBe('1');
+      expect(silhouette.querySelector('svg')?.getAttribute('data-booster-count')).toBe('0');
+    });
+
+    addStageButton.click();
+
+    await waitFor(() => {
+      expect(silhouette.querySelector('svg')?.getAttribute('data-stage-count')).toBe('2');
+    });
+
+    presetSelect.value = 'longMarch5';
+    presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(silhouette.querySelector('svg')?.getAttribute('data-stage-count')).toBe('2');
+      expect(silhouette.querySelector('svg')?.getAttribute('data-booster-count')).toBe('4');
+      expect(silhouette.querySelectorAll('.designer-v2-silhouette-booster').length).toBeGreaterThan(0);
+    });
+  });
 });

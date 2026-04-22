@@ -1698,6 +1698,116 @@ function renderVerdictExplainer(result) {
   `;
 }
 
+function silhouetteStageShape({ x, y, width, height, className }) {
+  return `<rect class="${className}" x="${x}" y="${y}" width="${width}" height="${height}" rx="10" />`;
+}
+
+function renderRocketSilhouette() {
+  const container = document.getElementById('rocket-silhouette');
+  if (!container) {
+    return;
+  }
+
+  const svgWidth = 240;
+  const svgHeight = 420;
+  const centerX = svgWidth / 2;
+  const stageWeights = state.stages.map((stage) => Math.max(Number(stage.propellantTons) || 1, 1));
+  const totalStageWeight = stageWeights.reduce((sum, value) => sum + value, 0);
+  const usableStageHeight = 280;
+  const minStageHeight = 38;
+  const firstStageWeight = stageWeights[0] ?? 1;
+  const boostersActive = Number(state.boosters?.count ?? 0) > 0;
+  const boosterPods = boostersActive ? Math.min(2, Math.ceil(Number(state.boosters.count) / 2)) : 0;
+  const boosterCount = Number(state.boosters?.count ?? 0);
+  const baseWidth = 88;
+  const topWidth = 36;
+  const stageCount = state.stages.length;
+  let currentY = 344;
+  const stageMarkup = [];
+
+  state.stages.forEach((stage, index) => {
+    const ratio = stageWeights[index] / totalStageWeight;
+    const height =
+      index === state.stages.length - 1
+        ? Math.max(currentY - 72, minStageHeight)
+        : Math.max(usableStageHeight * ratio, minStageHeight);
+    const width =
+      baseWidth - ((baseWidth - topWidth) * index) / Math.max(state.stages.length - 1, 1);
+    const x = centerX - width / 2;
+    const y = currentY - height;
+    const className =
+      index === 0 ? 'designer-v2-silhouette-stage' : 'designer-v2-silhouette-stage is-upper';
+
+    stageMarkup.push(silhouetteStageShape({ x, y, width, height, className }));
+
+    if (index > 0) {
+      stageMarkup.push(
+        `<line class="designer-v2-silhouette-separator" x1="${x}" x2="${x + width}" y1="${currentY}" y2="${currentY}" />`
+      );
+    }
+
+    currentY = y;
+  });
+
+  const noseWidth = topWidth;
+  const noseHeight = 46;
+  const noseY = currentY - noseHeight;
+  const noseMarkup = `
+    <path
+      class="designer-v2-silhouette-nose"
+      d="M ${centerX - noseWidth / 2} ${currentY} Q ${centerX} ${noseY - 10} ${centerX + noseWidth / 2} ${currentY} Z"
+    />
+    <rect
+      class="designer-v2-silhouette-fairing"
+      x="${centerX - noseWidth / 2}"
+      y="${currentY - 18}"
+      width="${noseWidth}"
+      height="18"
+      rx="8"
+    />
+  `;
+
+  const boosterMarkup = [];
+  if (boosterPods > 0) {
+    const boosterHeight = Math.min(220, 140 + firstStageWeight * 0.12);
+    const boosterWidth = boosterCount >= 4 ? 22 : 18;
+    const boosterTop = 344 - boosterHeight + 12;
+    const offsets = boosterPods === 2 ? [56, 80] : [62];
+
+    offsets.forEach((offset, index) => {
+      const y = boosterTop + index * 10;
+      boosterMarkup.push(
+        `<rect class="designer-v2-silhouette-booster" x="${centerX - offset - boosterWidth}" y="${y}" width="${boosterWidth}" height="${boosterHeight - index * 10}" rx="9" />`
+      );
+      boosterMarkup.push(
+        `<rect class="designer-v2-silhouette-booster" x="${centerX + offset}" y="${y}" width="${boosterWidth}" height="${boosterHeight - index * 10}" rx="9" />`
+      );
+    });
+  }
+
+  container.innerHTML = `
+    <svg
+      viewBox="0 0 ${svgWidth} ${svgHeight}"
+      role="img"
+      aria-label="${formatMessage('designer_v2.silhouette.aria', {
+        stages: stageCount,
+        boosters: boosterCount,
+      })}"
+      data-stage-count="${stageCount}"
+      data-booster-count="${boosterCount}"
+    >
+      <text class="designer-v2-silhouette-label" x="${centerX}" y="24" text-anchor="middle">
+        ${formatMessage('designer_v2.silhouette.badge', { stages: stageCount, boosters: boosterCount })}
+      </text>
+      ${boosterMarkup.join('')}
+      ${stageMarkup.join('')}
+      ${noseMarkup}
+      <rect class="designer-v2-silhouette-outline" x="${centerX - 2}" y="344" width="4" height="30" rx="2" fill="rgba(15, 23, 42, 0.12)" />
+      <line class="designer-v2-silhouette-outline" x1="${centerX - 44}" x2="${centerX + 44}" y1="374" y2="374" />
+    </svg>
+  `;
+}
+
 function renderSummary(result, blocked, errorMessage = '') {
   const totalDv = document.getElementById('total-dv');
   const verdictPill = document.getElementById('verdict-pill');
@@ -1733,6 +1843,7 @@ function renderSummary(result, blocked, errorMessage = '') {
     warningsList.innerHTML = `<li>${t('designer_v2.summary.awaiting')}</li>`;
     summaryStatus.textContent = errorMessage || t('designer_v2.summary.invalid');
     analyzeButton.disabled = true;
+    renderRocketSilhouette();
     renderMissionBar(null);
     renderVerdictExplainer(null);
     return;
@@ -1792,6 +1903,7 @@ function renderSummary(result, blocked, errorMessage = '') {
     ? t('designer_v2.summary.blocked')
     : t('designer_v2.summary.ready');
   analyzeButton.disabled = blocked;
+  renderRocketSilhouette();
   renderMissionBar(result);
   renderVerdictExplainer(result);
 }
