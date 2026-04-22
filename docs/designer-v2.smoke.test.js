@@ -446,6 +446,46 @@ describe('designer-v2 smoke flow', () => {
     expect(siblingText).toBe('');
   });
 
+  it('collapses booster controls when count=0 and expands when count>0', async () => {
+    await loadDesignerV2Page();
+
+    // Default state: count=0, collapsible wrapper hidden
+    const collapsible = document.querySelector('.boosters-collapsible');
+    expect(collapsible).not.toBeNull();
+    expect(collapsible.hasAttribute('hidden')).toBe(true);
+
+    // Count input and heading are still visible
+    const countInput = document.getElementById('booster-count');
+    expect(countInput).not.toBeNull();
+    expect(countInput.value).toBe('0');
+    expect(document.getElementById('booster-title')).not.toBeNull();
+
+    // Engine spotlight and metrics hidden inside collapsible
+    expect(collapsible.querySelector('#booster-metrics')).not.toBeNull();
+
+    // Set count to 2 → collapsible should appear
+    countInput.value = '2';
+    countInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      const updated = document.querySelector('.boosters-collapsible');
+      expect(updated).not.toBeNull();
+      expect(updated.hasAttribute('hidden')).toBe(false);
+      expect(updated.querySelector('#booster-metrics')).not.toBeNull();
+    });
+
+    // Set count back to 0 → collapsible hidden again
+    const countInput2 = document.getElementById('booster-count');
+    countInput2.value = '0';
+    countInput2.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      const collapsed = document.querySelector('.boosters-collapsible');
+      expect(collapsed).not.toBeNull();
+      expect(collapsed.hasAttribute('hidden')).toBe(true);
+    });
+  });
+
   it('renders unified header with site title, nav, theme toggle, and language toggle', async () => {
     await loadDesignerV2Page();
 
