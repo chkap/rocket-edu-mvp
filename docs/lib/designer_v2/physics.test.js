@@ -111,6 +111,7 @@ describe('analyze presets', () => {
     expect(result.total.dv_kms).toBeGreaterThan(16.15);
     expect(result.total.dv_kms).toBeLessThan(17.85);
     expect(result.total.mission_target).toBe('TLI');
+    expect(result.total.target_met).toBe(true);
   });
 
   it('keeps SLS Block 1 within 5% of the target oracle', () => {
@@ -147,6 +148,21 @@ describe('analyze edge cases', () => {
     });
 
     expect(result.total.dv_ms).toBe(0);
+  });
+
+  it('treats stronger verdicts as meeting easier named mission targets', () => {
+    const lunarCapableForTli = analyze({
+      ...saturnV,
+      missionTarget: 'TLI',
+    });
+    const gtoCapableForLeo = analyze({
+      ...saturnV,
+      missionTarget: 'LEO',
+    });
+
+    expect(lunarCapableForTli.total.verdict).toBe('Lunar landing');
+    expect(lunarCapableForTli.total.target_met).toBe(true);
+    expect(gtoCapableForLeo.total.target_met).toBe(true);
   });
 
   it('accepts max throttle on a launch stage', () => {

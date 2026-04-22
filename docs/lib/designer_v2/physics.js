@@ -264,6 +264,10 @@ export function verdict(dv_kms) {
   return match?.label ?? 'Suborbital';
 }
 
+function missionRequirementKmS(missionLabel) {
+  return VERDICT_THRESHOLDS.find((threshold) => threshold.label === missionLabel)?.min_kms ?? null;
+}
+
 function computeStageMasses(stage, options = {}) {
   const propellantMassKg = stage.propellantMassKg ?? getEngine(stage.engineKey).fixed_propellant_kg ?? 0;
   const dryMassKg = dryMass(stage, options);
@@ -554,7 +558,7 @@ export function analyze(config) {
         targetRequirementKmS !== null
           ? totalDvMs / 1000 >= targetRequirementKmS
           : typeof config.missionTarget === 'string'
-          ? verdict(totalDvMs / 1000) === config.missionTarget
+          ? totalDvMs / 1000 >= (missionRequirementKmS(config.missionTarget) ?? Number.POSITIVE_INFINITY)
           : null,
       warnings: cloneWarnings(warnings),
     },
