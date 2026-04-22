@@ -290,9 +290,18 @@ describe('t and formatMessage', () => {
       href: 'https://example.test/index.html?lang=zh',
     });
 
-    expect(t('nav.designer_v2')).toBe('火箭设计器 v2');
+    expect(t('nav.designer_v2')).toBe('高级火箭设计器');
     expect(t('designer_v2.structural.fixed')).toBe('固定质量模型');
     expect(formatMessage('designer.stage.count.other', { count: 3 })).toBe('3 级');
+  });
+
+  it('keeps user-facing copy free of internal issue and code-path references', () => {
+    installGlobals();
+
+    expect(t('designer_v2.controls.preset_note')).not.toMatch(/#\d+|issue/i);
+    expect(t('designer_v2.controls.preset_source_link')).not.toMatch(/#\d+|issue/i);
+    expect(t('designer.footer.prefix')).not.toContain('docs/lib/rocket.js');
+    expect(t('designer_v2.footer.prefix')).not.toContain('docs/lib/designer_v2/physics.js');
   });
 
   it('warns and echoes the key when the translation is missing', () => {
