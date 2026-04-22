@@ -185,9 +185,13 @@ describe('designer-v2 smoke flow', () => {
     });
 
     const missionLegend = document.querySelectorAll('[data-mission-legend-id]');
-    expect(missionLegend).toHaveLength(4);
+    expect(missionLegend).toHaveLength(6);
     expect(document.querySelector('[data-mission-legend-id="geo"]')?.textContent).toContain('GEO');
     expect(document.querySelector('[data-mission-legend-id="geo"]')?.textContent).toContain('13.3');
+    expect(document.querySelector('[data-mission-legend-id="gto"]')?.textContent).toContain('GTO');
+    expect(document.querySelector('[data-mission-legend-id="gto"]')?.textContent).toContain('11.8');
+    expect(document.querySelector('[data-mission-legend-id="tli"]')?.textContent).toContain('TLI');
+    expect(document.querySelector('[data-mission-legend-id="tli"]')?.textContent).toContain('12.4');
     expect(document.querySelector('[data-mission-legend-id="meo"]')?.classList.contains('is-target')).toBe(true);
   });
 

@@ -137,6 +137,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.55rem 0.8rem;
+  min-height: 2.75rem;
   font-size: 0.88rem;
   background: var(--surface);
   color: var(--text);
