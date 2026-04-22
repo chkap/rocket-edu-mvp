@@ -238,6 +238,7 @@ function syncThemeToggle(button, theme) {
   button.setAttribute('aria-label', actionLabel);
   button.setAttribute('title', actionLabel);
   button.setAttribute('aria-pressed', String(isDark));
+  button.classList.toggle('is-active', true);
 }
 
 export function attachThemeToggle(root = document) {
