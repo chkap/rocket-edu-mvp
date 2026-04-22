@@ -57,7 +57,15 @@
             <div class="designer-v2-toolbar-actions">
               <div class="form-field designer-v2-preset-field">
                 <label for="preset-select" data-i18n="designer_v2.controls.preset_label"></label>
+                <p class="designer-v2-preset-copy muted" data-i18n="designer_v2.controls.preset_note"></p>
+                <div
+                  id="preset-quick-load"
+                  class="designer-v2-preset-chips"
+                  data-i18n="designer_v2.controls.featured_presets"
+                  data-i18n-attr="aria-label"
+                ></div>
                 <select id="preset-select" name="preset"></select>
+                <p id="preset-source" class="designer-v2-note"></p>
               </div>
               <div class="designer-v2-button-row">
                 <button type="button" id="add-stage" data-i18n="designer_v2.controls.add_stage"></button>

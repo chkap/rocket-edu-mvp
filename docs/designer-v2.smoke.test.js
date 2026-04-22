@@ -101,4 +101,39 @@ describe('designer-v2 smoke flow', () => {
     expect(totalDv).toBeGreaterThanOrEqual(9.4);
     expect(totalDv).toBeLessThanOrEqual(9.6);
   });
+
+  it('quick-loads named presets and switches back to Custom after edits', async () => {
+    await loadDesignerV2Page();
+
+    const quickLoadSaturn = document.querySelector('[data-preset-load="saturnV"]');
+    const presetSelect = document.getElementById('preset-select');
+
+    expect(quickLoadSaturn).not.toBeNull();
+    expect(presetSelect).not.toBeNull();
+
+    quickLoadSaturn.click();
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('#stage-list [data-stage-index]')).toHaveLength(3);
+      expect(document.getElementById('verdict-pill')?.textContent).not.toContain('Suborbital');
+    });
+
+    const quickLoadLongMarch = document.querySelector('[data-preset-load="longMarch5"]');
+    expect(quickLoadLongMarch).not.toBeNull();
+    quickLoadLongMarch.click();
+
+    await waitFor(() => {
+      expect(document.getElementById('booster-count')?.value).toBe('4');
+      expect(document.getElementById('verdict-pill')?.textContent).toContain('LEO');
+    });
+
+    const payloadInput = document.getElementById('payload-mass');
+    expect(payloadInput).not.toBeNull();
+    payloadInput.value = '70000';
+    payloadInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(presetSelect.value).toBe('custom');
+    });
+  });
 });
