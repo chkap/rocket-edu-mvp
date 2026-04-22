@@ -88,6 +88,10 @@
   color: inherit;
 }
 
+.designer-v2-glossary-tooltip[hidden] {
+  display: none !important;
+}
+
 .designer-v2-glossary-tooltip {
   position: absolute;
   z-index: 10;
