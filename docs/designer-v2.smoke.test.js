@@ -406,4 +406,37 @@ describe('designer-v2 smoke flow', () => {
     });
   });
 
+  it('shows "Sea-level data not applicable" for vacuum-only engines instead of dashes', async () => {
+    await loadDesignerV2Page();
+
+    // Falcon 9 preset gives us a 2-stage rocket with merlin_vac on stage 1
+    const presetSelect = document.getElementById('preset-select');
+    presetSelect.value = 'falcon9';
+    presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      const panel = document.querySelector('[data-engine-panel="merlin_vac"]');
+      expect(panel).not.toBeNull();
+      expect(panel?.textContent).toContain('Sea-level data not applicable');
+      expect(panel?.querySelector('.designer-v2-engine-stats-note')).not.toBeNull();
+    });
+  });
+
+  it('renders booster heading as one clean string without stray trailing characters', async () => {
+    await loadDesignerV2Page();
+
+    const boosterTitle = document.getElementById('booster-title');
+    expect(boosterTitle).not.toBeNull();
+    const trigger = boosterTitle.querySelector('[data-glossary-trigger="booster"]');
+    expect(trigger).not.toBeNull();
+    expect(trigger.textContent.trim()).toBe('Boosters');
+    // No stray text nodes outside the glossary item
+    const glossaryItem = boosterTitle.querySelector('[data-glossary-item="booster"]');
+    const siblingText = Array.from(boosterTitle.childNodes)
+      .filter((n) => n !== glossaryItem && n.nodeType === 3)
+      .map((n) => n.textContent.trim())
+      .join('');
+    expect(siblingText).toBe('');
+  });
+
 });

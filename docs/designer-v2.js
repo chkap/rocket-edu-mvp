@@ -1319,6 +1319,19 @@ function engineSpotlightMarkup(engine, panelId) {
     return '';
   }
 
+  const vacuumOnly = engine.thrust_sl_kN === 0 || engine.isp_sl === 0;
+
+  const seaLevelRows = vacuumOnly
+    ? `<div class="designer-v2-engine-stats-note"><dd>${t('designer_v2.engine_card.sea_level_na')}</dd></div>`
+    : `<div>
+            <dt>${t('designer_v2.engine_card.thrust_sea_level')}</dt>
+            <dd>${formatStatValue(engine.thrust_sl_kN, 'kN')}</dd>
+          </div>
+          <div>
+            <dt>${withGlossaryTerm(t('designer_v2.engine_card.isp_sea_level'), 'sea-level-isp')}</dt>
+            <dd>${formatStatValue(engine.isp_sl, 's', 0)}</dd>
+          </div>`;
+
   return `
     <section class="designer-v2-engine-card" aria-labelledby="${panelId}-title" data-engine-panel="${engine.key}">
       <div class="designer-v2-engine-card-copy">
@@ -1331,17 +1344,10 @@ function engineSpotlightMarkup(engine, panelId) {
       <div class="designer-v2-engine-card-body">
         ${engineSpotlightIllustration(engine, panelId)}
         <dl class="designer-v2-engine-stats">
-          <div>
-            <dt>${t('designer_v2.engine_card.thrust_sea_level')}</dt>
-            <dd>${formatStatValue(engine.thrust_sl_kN, 'kN')}</dd>
-          </div>
+          ${seaLevelRows}
           <div>
             <dt>${t('designer_v2.engine_card.thrust_vacuum')}</dt>
             <dd>${formatStatValue(engine.thrust_vac_kN, 'kN')}</dd>
-          </div>
-          <div>
-            <dt>${withGlossaryTerm(t('designer_v2.engine_card.isp_sea_level'), 'sea-level-isp')}</dt>
-            <dd>${formatStatValue(engine.isp_sl, 's', 0)}</dd>
           </div>
           <div>
             <dt>${withGlossaryTerm(t('designer_v2.engine_card.isp_vacuum'), 'vacuum-isp')}</dt>
@@ -1567,9 +1573,9 @@ function boosterCardMarkup(analysis) {
     <article class="designer-v2-card" aria-labelledby="booster-title">
       <div class="designer-v2-card-header">
         <div>
-          <p class="designer-v2-card-role">${withGlossaryTerm(t('designer_v2.card.parallel_boosters'), 'booster')}</p>
+          <p class="designer-v2-card-role">${glossaryInlineMarkup('booster', t('designer_v2.card.parallel_boosters'))}</p>
           <h3 id="booster-title">${
-            withGlossaryTerm(boosters.nameKey ? t(boosters.nameKey) : t('designer_v2.card.boosters'), 'booster')
+            glossaryInlineMarkup('booster', boosters.nameKey ? t(boosters.nameKey) : t('designer_v2.card.boosters'))
           }</h3>
         </div>
       </div>

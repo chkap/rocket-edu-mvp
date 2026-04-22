@@ -458,6 +458,16 @@
   font-weight: 800;
 }
 
+.designer-v2-engine-stats-note {
+  grid-column: 1 / -1;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 .designer-v2-hidden {
   display: none !important;
 }
